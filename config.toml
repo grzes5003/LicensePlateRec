@@ -1,0 +1,7 @@
+debug=1
+
+[manager]
+    max_workers=4
+
+[logging]
+    show_futures_status=0
