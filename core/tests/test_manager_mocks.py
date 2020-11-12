@@ -1,4 +1,5 @@
 import filecmp
+import os
 
 from core.manager.Manager import Manager
 
@@ -11,5 +12,6 @@ def test_manager_mocks():
 
     manager = Manager(config)
     manager.run()
-
-    assert filecmp.cmp('core/tests/test_target_log.log', 'core/tests/test_log.log', shallow=False) is True
+    assert os.path.isfile('./test_target_log.log') is True
+    assert os.path.isfile('./test_log.log') is True
+    assert filecmp.cmp('./test_target_log.log', './test_log.log', shallow=False) is True
