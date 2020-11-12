@@ -58,6 +58,7 @@ class Manager:
 
         self._is_processing_running = True
         self._is_analyse_running = True
+        self._status = Signal.MAN_RUNNING
 
         self._show_futures_status = _config['logging']['show_futures_status']
         self._log_file_path = _config['output']['log_file_path']
@@ -87,6 +88,7 @@ class Manager:
             elif signal == Signal.MAN_SUBMITTING_FINISHED:
                 break
             self._management_queue.task_done()
+        self._status = Signal.MAN_STOPPED
         self.log.info("_management task finished")
 
     def run(self):
@@ -157,6 +159,9 @@ class Manager:
 
     def mock(self):
         return self._max_workers
+
+    def get_status(self):
+        return self._status
 
 
 if __name__ == '__main__':
