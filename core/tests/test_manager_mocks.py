@@ -1,5 +1,6 @@
 import filecmp
 import os
+import time
 
 from core.dataClasses.signal import Signal
 from core.manager.Manager import Manager
@@ -17,6 +18,7 @@ def test_manager_mocks():
     while manager.get_status() == Signal.MAN_RUNNING:
         pass
 
+    time.sleep(1)
     print(os.listdir('core/tests/'))
 
     assert os.path.isfile('core/tests/test_target_log.log') is True
