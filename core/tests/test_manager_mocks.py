@@ -17,6 +17,8 @@ def test_manager_mocks():
     while manager.get_status() == Signal.MAN_RUNNING:
         pass
 
+    print(os.listdir('core/tests/'))
+
     assert os.path.isfile('core/tests/test_target_log.log') is True
     assert os.path.isfile('core/tests/test_log.log') is True
     assert filecmp.cmp('core/tests/test_target_log.log', 'core/tests/test_log.log', shallow=True) is True
