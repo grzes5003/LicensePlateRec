@@ -4,7 +4,7 @@ from core.manager.Manager import Manager
 def test_proper_import():
     import toml
 
-    with open("./test_config.toml") as file:
+    with open("./core/tests/test_config.toml") as file:
         config = toml.load(file)
 
     manager = Manager(config)
