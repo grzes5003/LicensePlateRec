@@ -13,12 +13,36 @@ from core.dataClasses.frame import Frame
 from core.dataClasses.signal import Signal
 
 
+def singleton(class_):
+    instances = {}
+
+    def get_instance(*args, **kwargs):
+        if class_ not in instances:
+            instances[class_] = class_(*args, **kwargs)
+        return instances[class_]
+
+    return get_instance
+
+
+@singleton
 class Manager:
     def __init__(self, _config):
         """
         default constructor for Manager class
         :param _config: dictionary containing current configuration
         """
+
+        self.log = logging.getLogger(__name__)
+
+        ch = logging.StreamHandler(stream=sys.stdout)
+        if ['debug'] == 1:
+            self.log.setLevel(logging.DEBUG)
+        else:
+            self.log.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s|%(threadName)s|%(name)s|%(levelname)s|%(message)s', datefmt='%H:%M:%S')
+        ch.setFormatter(formatter)
+        self.log.addHandler(ch)
+
         self._max_workers = _config['manager']['max_workers']
         self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
         self._futures = []
@@ -53,7 +77,7 @@ class Manager:
             elif signal == Signal.MAN_SUBMITTING_FINISHED:
                 break
             self._management_queue.task_done()
-        log.info("_management task finished")
+        self.log.info("_management task finished")
 
     def run(self):
         """
@@ -67,7 +91,7 @@ class Manager:
         threading.Thread(target=self._submit_tasks).start()
         threading.Thread(target=self._listen_and_send).start()
 
-        log.info("run finished execution")
+        self.log.info("run finished execution")
 
     def _submit_tasks(self):
         while self._is_processing_running:
@@ -79,15 +103,16 @@ class Manager:
 
             self._futures.append(fut)
             self._processing_queue.task_done()
-        log.info('(img_processing) no more tasks to submit')
+        self.log.info('(img_processing) no more tasks to submit')
         self._executor.shutdown(wait=True)
         self._futures.clear()
+        self._producer_queue.put(None)
         self._is_analyse_running = False
 
         # temporary switch for _management method
         self._management_queue.put(Signal.MAN_SUBMITTING_FINISHED)
 
-        log.info('submitting tasks finished')
+        self.log.info('submitting tasks finished')
 
     def _callback(self, fn):
         """
@@ -97,15 +122,14 @@ class Manager:
         :return:
         """
         if fn.cancelled():
-            log.warning('canceled')
+            self.log.warning('canceled')
         elif fn.done():
             error = fn.exception()
             if error:
-                log.error('error returned: {}'.format(error))
+                self.log.error('error returned: {}'.format(error))
             else:
                 if self._show_futures_status == 1:
-                    result = fn.result()
-                    log.info('value returned: {}'.format(result))
+                    self.log.info('value returned: {}'.format(fn.result()))
         self._futures.remove(fn)
 
     def _listen_and_send(self):
@@ -117,11 +141,9 @@ class Manager:
             self._log_queue.put(res)
             if res is None:
                 break
-            # self._video_queue.put(res)
-            # time.sleep(0.01)
-            log.debug(res)
+            self.log.debug(res)
         self._log_queue.put(None)
-        log.info('DONE')
+        self.log.info('DONE')
 
 
 if __name__ == '__main__':
@@ -130,16 +152,6 @@ if __name__ == '__main__':
     with open("../../config.toml") as file:
         config = toml.load(file)
 
-    log = logging.getLogger(__name__)
-
-    ch = logging.StreamHandler(stream=sys.stdout)
-    if ['debug'] == 1:
-        print('elo')
-    log.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s -%(threadName)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
-    ch.setFormatter(formatter)
-    log.addHandler(ch)
-
-    # log.setLevel(logging.INFO)
     manager = Manager(config)
     manager.run()
+
