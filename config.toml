@@ -5,3 +5,6 @@ debug=1
 
 [logging]
     show_futures_status=0
+
+[output]
+    log_file_path='../log.log'

@@ -8,15 +8,32 @@ import queue
 import logging
 import sys
 
+from core.actorClasses.outputGenerator import OutputGenerator
+from core.dataClasses.frame import Frame
+from core.dataClasses.signal import Signal
+
 
 class Manager:
-    def __init__(self, max_workers, show_futures_status):
-        self._max_workers = max_workers
+    def __init__(self, _config):
+        """
+        default constructor for Manager class
+        :param _config: dictionary containing current configuration
+        """
+        self._max_workers = _config['manager']['max_workers']
         self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
         self._futures = []
+
         self._producer_queue = queue.Queue(maxsize=5)
-        self._is_running = True
-        self._show_futures_status = show_futures_status
+        self._processing_queue = queue.Queue(maxsize=5)
+        self._management_queue = queue.Queue(maxsize=2)
+        self._log_queue = queue.Queue(maxsize=10)
+        self._video_queue = queue.Queue(maxsize=10)
+
+        self._is_processing_running = True
+        self._is_analyse_running = True
+
+        self._show_futures_status = _config['logging']['show_futures_status']
+        self._log_file_path = _config['output']['log_file_path']
 
     # def run(self):
     #     with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
@@ -28,42 +45,82 @@ class Manager:
     #         for fut in as_completed(futures):
     #             print(fut.result())
 
+    def _management(self):
+        while True:
+            signal = self._management_queue.get()
+            if signal == Signal.IMG_PROCESSING_FINISHED:
+                self._is_processing_running = False
+            elif signal == Signal.MAN_SUBMITTING_FINISHED:
+                break
+            self._management_queue.task_done()
+        log.info("_management task finished")
+
     def run(self):
+        """
+
+        :return:
+        """
+        threading.Thread(target=self._management).start()
+
+        _imgProcessing = ImageProcessing(self._processing_queue, self._management_queue)
+        threading.Thread(target=_imgProcessing.process).start()
         threading.Thread(target=self._submit_tasks).start()
-        threading.Thread(target=self._listen_and_write).start()
-        # wait(self._futures, return_when='FIRST_COMPLETED')
-        # for future in as_completed(self._futures):
-        #     print(future.result())
-        log.info("done?")
+        threading.Thread(target=self._listen_and_send).start()
+
+        log.info("run finished execution")
 
     def _submit_tasks(self):
-        _imgProcessing = ImageProcessing()
-        for imgFrame in _imgProcessing.process():
+        while self._is_processing_running:
+            imgFrame: Frame = self._processing_queue.get()
+            if imgFrame is None:
+                break
             fut = self._executor.submit(ImageAnalyse.analyse, 1, imgFrame, self._producer_queue)
-            if self._show_futures_status == 1:
-                fut.add_done_callback(Manager._callback)
-            self._futures.append(fut)
-        self._executor.shutdown(wait=True)
-        self._is_running = False
-        log.info('done!')
+            fut.add_done_callback(self._callback)
 
-    @staticmethod
-    def _callback(fn):
+            self._futures.append(fut)
+            self._processing_queue.task_done()
+        log.info('(img_processing) no more tasks to submit')
+        self._executor.shutdown(wait=True)
+        self._futures.clear()
+        self._is_analyse_running = False
+
+        # temporary switch for _management method
+        self._management_queue.put(Signal.MAN_SUBMITTING_FINISHED)
+
+        log.info('submitting tasks finished')
+
+    def _callback(self, fn):
+        """
+        callback method is called after each future finishes. It clears associated future
+        and if specified in config logs frame info
+        :param fn:
+        :return:
+        """
         if fn.cancelled():
-            print('canceled')
+            log.warning('canceled')
         elif fn.done():
             error = fn.exception()
             if error:
-                print('error returned: {}'.format(error))
+                log.error('error returned: {}'.format(error))
             else:
-                result = fn.result()
-                print('value returned: {}'.format(result))
+                if self._show_futures_status == 1:
+                    result = fn.result()
+                    log.info('value returned: {}'.format(result))
+        self._futures.remove(fn)
 
-    def _listen_and_write(self):
-        while self._is_running:
+    def _listen_and_send(self):
+        output_gen = OutputGenerator(self._log_file_path, self._log_queue)
+        threading.Thread(target=output_gen.generate_log_file).start()
+
+        while self._is_analyse_running:
             res = self._producer_queue.get()
-            time.sleep(0.01)
+            self._log_queue.put(res)
+            if res is None:
+                break
+            # self._video_queue.put(res)
+            # time.sleep(0.01)
             log.debug(res)
+        self._log_queue.put(None)
         log.info('DONE')
 
 
@@ -84,5 +141,5 @@ if __name__ == '__main__':
     log.addHandler(ch)
 
     # log.setLevel(logging.INFO)
-    manager = Manager(config['manager']['max_workers'], config['logging']['show_futures_status'])
+    manager = Manager(config)
     manager.run()

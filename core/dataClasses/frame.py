@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(repr=True, order=True)
 class Frame:
-    pass
+    value: int
