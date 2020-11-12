@@ -145,6 +145,9 @@ class Manager:
         self._log_queue.put(None)
         self.log.info('DONE')
 
+    def mock(self):
+        return self._max_workers
+
 
 if __name__ == '__main__':
     import toml

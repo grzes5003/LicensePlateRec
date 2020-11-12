@@ -1,0 +1,10 @@
+debug=1
+
+[manager]
+    max_workers=20
+
+[logging]
+    show_futures_status=0
+
+[output]
+    log_file_path='../log.log'
