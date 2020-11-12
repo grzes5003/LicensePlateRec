@@ -24,4 +24,4 @@ jobs:
       run: |
         pip install pytest
         pip install pytest-cov
-        pytest core/tests/test_basic_config.py
+        pytest core/tests/test*.py
