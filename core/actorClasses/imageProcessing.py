@@ -1,10 +1,23 @@
 import random
 import time
+from abc import ABC, abstractmethod
+
 from core.dataClasses.frame import Frame
 from core.dataClasses.signal import Signal
 
 
-class ImageProcessing:
+class ImageProcessingInt(ABC):
+    @abstractmethod
+    def process(self):
+        pass
+
+
+class ImageProcessing(ImageProcessingInt):
+    def process(self):
+        pass
+
+
+class ImageProcessingMock(ImageProcessingInt):
     def __init__(self, processing_queue, management_queue):
         self._limit = 120
         self._processing_queue = processing_queue

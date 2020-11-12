@@ -2,8 +2,8 @@ import threading
 import time
 from concurrent.futures.thread import ThreadPoolExecutor
 from concurrent.futures import as_completed, wait
-from core.actorClasses.ImageProcessing import ImageProcessing
-from core.actorClasses.ImageAnalyse import ImageAnalyse
+from core.actorClasses.imageProcessing import ImageProcessingMock, ImageProcessing
+from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse
 import queue
 import logging
 import sys
@@ -31,15 +31,18 @@ class Manager:
         default constructor for Manager class
         :param _config: dictionary containing current configuration
         """
+        self._debug = _config['debug']
+        self._mock = _config['mock']
 
         self.log = logging.getLogger(__name__)
 
         ch = logging.StreamHandler(stream=sys.stdout)
-        if ['debug'] == 1:
+        if self._debug == 1:
             self.log.setLevel(logging.DEBUG)
         else:
             self.log.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s|%(threadName)s|%(name)s|%(levelname)s|%(message)s', datefmt='%H:%M:%S')
+        formatter = logging.Formatter('%(asctime)s|%(threadName)s|%(name)s|%(levelname)s|%(message)s',
+                                      datefmt='%H:%M:%S')
         ch.setFormatter(formatter)
         self.log.addHandler(ch)
 
@@ -59,11 +62,18 @@ class Manager:
         self._show_futures_status = _config['logging']['show_futures_status']
         self._log_file_path = _config['output']['log_file_path']
 
+        if self._mock == 0:
+            self._img_processing_class = ImageProcessing
+            self._img_analyse_class = ImageAnalyse
+        else:
+            self._img_processing_class = ImageProcessingMock
+            self._img_analyse_class = ImageAnalyseMock
+
     # def run(self):
     #     with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
-    #         _imgProcessing = ImageProcessing()
+    #         _imgProcessing = ImageProcessingMock()
     #         futures = {
-    #             executor.submit(ImageAnalyse.analyse, 1, task) for task in _imgProcessing.process()
+    #             executor.submit(ImageAnalyseMock.analyse, 1, task) for task in _imgProcessing.process()
     #         }
     #         print("cos")
     #         for fut in as_completed(futures):
@@ -86,7 +96,7 @@ class Manager:
         """
         threading.Thread(target=self._management).start()
 
-        _imgProcessing = ImageProcessing(self._processing_queue, self._management_queue)
+        _imgProcessing = self._img_processing_class(self._processing_queue, self._management_queue)
         threading.Thread(target=_imgProcessing.process).start()
         threading.Thread(target=self._submit_tasks).start()
         threading.Thread(target=self._listen_and_send).start()
@@ -98,7 +108,7 @@ class Manager:
             imgFrame: Frame = self._processing_queue.get()
             if imgFrame is None:
                 break
-            fut = self._executor.submit(ImageAnalyse.analyse, 1, imgFrame, self._producer_queue)
+            fut = self._executor.submit(self._img_analyse_class.analyse, 1, imgFrame, self._producer_queue)
             fut.add_done_callback(self._callback)
 
             self._futures.append(fut)
@@ -157,4 +167,3 @@ if __name__ == '__main__':
 
     manager = Manager(config)
     manager.run()
-

@@ -1,10 +1,11 @@
 debug=1
+mock=1
 
 [manager]
-    max_workers=20
+    max_workers=5
 
 [logging]
     show_futures_status=0
 
 [output]
-    log_file_path='../log.log'
+    log_file_path='core/tests/test_log.log'
