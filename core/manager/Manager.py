@@ -1,13 +1,11 @@
-import threading
-import time
-from concurrent.futures.thread import ThreadPoolExecutor
-from concurrent.futures import as_completed, wait
-from core.actorClasses.imageProcessing import ImageProcessingMock, ImageProcessing
-from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse
-import queue
 import logging
+import queue
 import sys
+import threading
+from concurrent.futures.thread import ThreadPoolExecutor
 
+from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse
+from core.actorClasses.imageProcessing import ImageProcessingMock, ImageProcessing
 from core.actorClasses.outputGenerator import OutputGenerator
 from core.dataClasses.frame import Frame
 from core.dataClasses.signal import Signal
@@ -67,18 +65,9 @@ class Manager:
             self._img_processing_class = ImageProcessing
             self._img_analyse_class = ImageAnalyse
         else:
+            self.log.warning("MOCK are classes used")
             self._img_processing_class = ImageProcessingMock
             self._img_analyse_class = ImageAnalyseMock
-
-    # def run(self):
-    #     with ThreadPoolExecutor(max_workers=self._max_workers) as executor:
-    #         _imgProcessing = ImageProcessingMock()
-    #         futures = {
-    #             executor.submit(ImageAnalyseMock.analyse, 1, task) for task in _imgProcessing.process()
-    #         }
-    #         print("cos")
-    #         for fut in as_completed(futures):
-    #             print(fut.result())
 
     def _management(self):
         while True:

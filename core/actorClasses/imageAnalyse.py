@@ -23,4 +23,3 @@ class ImageAnalyseMock(ImageAnalyseInt):
         queue.put(frame)
         queue.task_done()
         return frame
-

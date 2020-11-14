@@ -7,8 +7,6 @@ class OutputGenerator:
 
         self.log = logging.getLogger(__name__)
         ch = logging.StreamHandler(stream=sys.stdout)
-        if ['debug'] == 1:
-            print('elo')
         self.log.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(threadName)s - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
         ch.setFormatter(formatter)

@@ -18,6 +18,7 @@ def test_manager_mocks():
     while manager.get_status() == Signal.MAN_RUNNING:
         pass
 
+    # TODO add signal from generator it has generated output
     time.sleep(1)
     print(os.listdir('core/tests/'))
 
