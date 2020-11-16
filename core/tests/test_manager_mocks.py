@@ -15,7 +15,7 @@ def test_manager_mocks():
     manager = Manager(config)
     manager.run()
 
-    while manager.get_status() == Signal.MAN_RUNNING:
+    while manager.get_status():
         pass
 
     # TODO add signal from generator it has generated output

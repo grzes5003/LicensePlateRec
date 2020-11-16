@@ -57,7 +57,7 @@ class Manager:
         self._log_file_path = _config['output']['log_file_path']
 
         self._analysed_frames = Subject()
-        self._file_generation_status = False
+        self._file_generation_status = True
 
         if self._mock == 0:
             self._img_processing_class = ImageProcessing
