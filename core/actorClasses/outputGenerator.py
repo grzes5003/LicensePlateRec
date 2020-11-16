@@ -2,12 +2,13 @@ import logging
 import sys
 
 from rx.subject import Subject
+from rx import create
 
 from core.dataClasses.LicensePlate import LicensePlate
 
 
 class OutputGenerator:
-    def __init__(self, log_file_path: str, analysed_frames: Subject):
+    def __init__(self, log_file_path: str, analysed_frames: Subject, status_callback: Subject):
 
         self.log = logging.getLogger(__name__)
         ch = logging.StreamHandler(stream=sys.stdout)
@@ -20,6 +21,7 @@ class OutputGenerator:
         self._analysed_frames = analysed_frames
 
         self._logs = {}
+        self._status_callback = status_callback
 
     def generate_log_file(self):
         """
@@ -42,5 +44,6 @@ class OutputGenerator:
             length = len(self._logs)
             for i in range(0, length):
                 file.write(self._logs[i])
+        self._status_callback.on_completed()
 
 

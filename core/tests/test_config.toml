@@ -3,6 +3,7 @@ mock=1
 
 [manager]
     max_workers=5
+    nth_analysed=5
 
 [logging]
     show_futures_status=0

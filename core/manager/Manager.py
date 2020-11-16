@@ -64,6 +64,7 @@ class Manager:
         self._log_file_path = _config['output']['log_file_path']
 
         self._analysed_frames = Subject()
+        self._generate_log_status = Subject()
         self._file_generation_status = True
 
         if self._mock == 0:
@@ -158,8 +159,18 @@ class Manager:
         It invokes Output Generation process.
         :return:
         """
+
+        def _switch_status():
+            self._file_generation_status = True
+
+        self._generate_log_status.subscribe(
+            on_next=lambda m: self.log.info('Output generator status: {}'.format(m)),
+            on_error=lambda e: self.log.error('Output generator error: {}'.format(e)),
+            on_completed=lambda: _switch_status(),
+        )
+
         self._file_generation_status = True
-        output_gen = OutputGenerator(self._log_file_path, self._analysed_frames)
+        output_gen = OutputGenerator(self._log_file_path, self._analysed_frames, self._generate_log_status)
         output_gen.generate_log_file()
         self._file_generation_status = False
 

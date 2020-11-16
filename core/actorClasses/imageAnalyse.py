@@ -22,5 +22,5 @@ class ImageAnalyse(ImageAnalyseInt):
 class ImageAnalyseMock(ImageAnalyseInt):
     @staticmethod
     def analyse(_id, frame: Frame) -> LicensePlate:
-        time.sleep(random.uniform(0.5, 1))
+        time.sleep(random.uniform(0.01, 0.05))
         return LicensePlate(id_=frame.id_)
