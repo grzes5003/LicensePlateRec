@@ -2,7 +2,6 @@ import filecmp
 import os
 import time
 
-from core.dataClasses.signal import Signal
 from core.manager.Manager import Manager
 
 

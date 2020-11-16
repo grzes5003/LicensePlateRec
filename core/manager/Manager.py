@@ -1,17 +1,18 @@
 import logging
-import queue
 import sys
 import threading
 from concurrent.futures.thread import ThreadPoolExecutor
+from copy import deepcopy
 
 from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse
 from core.actorClasses.imageProcessing import ImageProcessingMock, ImageProcessing
 from core.actorClasses.outputGenerator import OutputGenerator
-from core.dataClasses.frame import Frame
-from core.dataClasses.signal import Signal
 
 from rx import create, operators as ops
 from rx.subject import Subject
+
+from core.dataClasses.LicensePlate import LicensePlate
+from core.dataClasses.frame import Frame
 
 
 def singleton(class_):
@@ -67,6 +68,8 @@ class Manager:
             self._img_processing_class = ImageProcessingMock
             self._img_analyse_class = ImageAnalyseMock
 
+        self._last_analysed_frame = LicensePlate(-1)
+
     def run(self):
         """
         method starts image processing, analysis and output generation.
@@ -84,7 +87,7 @@ class Manager:
         _img_processing_instance = self._img_processing_class()
         _img_processing_source = create(_img_processing_instance.process)
 
-        _img_processing_source.subscribe(
+        _img_processing_source.pipe(ops.filter(lambda f: self._filter(f))).subscribe(
             on_next=lambda f: self._on_next(f),
             on_error=lambda e: self.log.error(e),
             on_completed=lambda: self.log.info('Img processing has been completed')
@@ -94,7 +97,14 @@ class Manager:
         self._futures.clear()
         self._analysed_frames.on_completed()
 
-    def _on_next(self, frame):
+    def _filter(self, frame: Frame) -> bool:
+        if frame.id_ % 5 == 0:
+            return True
+        self._last_analysed_frame.id_ = frame.id_
+        self._analysed_frames.on_next(self._last_analysed_frame)
+        return False
+
+    def _on_next(self, frame: Frame):
         """
         Passes incoming Frame to self._executor for analysis.
         :param frame: instance of Frame class
@@ -123,6 +133,7 @@ class Manager:
             else:
                 if self._show_futures_status == 1:
                     self.log.info('value returned: {}'.format(fn.result()))
+                self._last_analysed_frame = fn.result()
                 self._analysed_frames.on_next(fn.result())
         self._futures.remove(fn)
 

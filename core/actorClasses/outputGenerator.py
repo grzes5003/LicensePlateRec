@@ -3,9 +3,12 @@ import sys
 
 from rx.subject import Subject
 
+from core.dataClasses.LicensePlate import LicensePlate
+from core.dataClasses.frame import Frame
+
 
 class OutputGenerator:
-    def __init__(self, log_file_path, analysed_frames: Subject):
+    def __init__(self, log_file_path: str, analysed_frames: Subject):
 
         self.log = logging.getLogger(__name__)
         ch = logging.StreamHandler(stream=sys.stdout)
@@ -31,8 +34,8 @@ class OutputGenerator:
             on_completed=lambda: self._on_completed()
         )
 
-    def _on_next(self, frame):
-        self._logs[frame.value] = str(frame.value) + ':' + str(frame) + '\n'
+    def _on_next(self, license_plate: LicensePlate):
+        self._logs[license_plate.id_] = str(license_plate.id_) + ':' + str(license_plate) + '\n'
 
     def _on_completed(self):
         self.log.info('out of while True')
