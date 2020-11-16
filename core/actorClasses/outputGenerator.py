@@ -4,7 +4,6 @@ import sys
 from rx.subject import Subject
 
 from core.dataClasses.LicensePlate import LicensePlate
-from core.dataClasses.frame import Frame
 
 
 class OutputGenerator:

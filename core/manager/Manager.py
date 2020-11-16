@@ -16,6 +16,11 @@ from core.dataClasses.frame import Frame
 
 
 def singleton(class_):
+    """
+    decorator used as a form of singleton design pattern implementation
+    :param class_:
+    :return:
+    """
     instances = {}
 
     def get_instance(*args, **kwargs):
@@ -31,10 +36,11 @@ class Manager:
     def __init__(self, _config):
         """
         default constructor for Manager class
-        :param _config: dictionary containing current configuration
+        :param _config: dictionary containing current configuration (from a *config.toml file)
         """
         self._debug = _config['debug']
         self._mock = _config['mock']
+        self._nth_analysed = _config['manager']['nth_analysed']
 
         # logger declaration
         self.log = logging.getLogger(__name__)
@@ -73,6 +79,9 @@ class Manager:
     def run(self):
         """
         method starts image processing, analysis and output generation.
+        It creates appropriate threads for:
+            _collect_img_processing: starting processing and collecting images
+            _generate_log_file: starting generation of output log file
         :return:
         """
         threading.Thread(target=self._collect_img_processing).start()
@@ -98,7 +107,14 @@ class Manager:
         self._analysed_frames.on_completed()
 
     def _filter(self, frame: Frame) -> bool:
-        if frame.id_ % 5 == 0:
+        """
+        filtering method used by incoming processed images stream.
+        It passes every nth frame to be analysed to optimise program execution.
+        Rest of the frames are directly passed (as LicensePlate) to Output generator instance.
+        :param frame: Frame: input Frame
+        :return: boolean: based on frame id_ returns True or False
+        """
+        if frame.id_ % self._nth_analysed == 0:
             return True
         self._last_analysed_frame.id_ = frame.id_
         self._analysed_frames.on_next(self._last_analysed_frame)
@@ -155,6 +171,11 @@ class Manager:
         return self._max_workers
 
     def get_status(self):
+        """
+        DEPRECATED
+        TO BE REMOVED IN FUTURE
+        :return:
+        """
         return self._file_generation_status
 
 
