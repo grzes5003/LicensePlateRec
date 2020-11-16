@@ -1,5 +1,6 @@
 import random
 import time
+import cv2
 from abc import ABC, abstractmethod
 
 from core.dataClasses.frame import Frame
@@ -19,7 +20,40 @@ class ImageProcessingInt(ABC):
         :param _scheduler: rx.core.typing.Scheduler
         :return:
         """
-        raise NotImplemented
+
+        video = cv2.VideoCapture(self.path)
+
+        if video.isOpened() == False:
+            _observer.on_error('FILE NOT FOUND OR WRONG CODEC')
+
+        # Find OpenCV version
+        (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+
+        if int(major_ver) < 3:
+            fps = video.get(cv2.cv.CV_CAP_PROP_FPS)
+        else:
+            fps = video.get(cv2.CAP_PROP_FPS)
+
+        curr_frame = 0
+        while video.isOpened():
+            ret, frame = video.read()
+
+            if ret == True:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                f = Frame()
+                f.id_ = curr_frame
+                f.time_stamp_ = curr_frame/fps
+                f.img_ = gray
+                _observer.on_next(f)
+            else:
+                break
+
+            curr_frame += 1
+
+        video.release()
+        _observer.on_completed()
+
+        #raise NotImplemented
 
 
 class ImageProcessing(ImageProcessingInt):
