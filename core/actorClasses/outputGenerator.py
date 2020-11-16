@@ -1,9 +1,11 @@
 import logging
 import sys
 
+from rx.subject import Subject
+
 
 class OutputGenerator:
-    def __init__(self, log_file_path, log_queue):
+    def __init__(self, log_file_path, analysed_frames: Subject):
 
         self.log = logging.getLogger(__name__)
         ch = logging.StreamHandler(stream=sys.stdout)
@@ -13,27 +15,30 @@ class OutputGenerator:
         self.log.addHandler(ch)
 
         self._log_file_path = log_file_path
-        self._log_queue = log_queue
+        self._analysed_frames = analysed_frames
+
+        self._logs = {}
 
     def generate_log_file(self):
         """
         generates log file as output
-        :return: status
         """
-        logs = {}
         self.log.debug("enters")
 
-        while True:
-            frame = self._log_queue.get()
-            # self.log.debug("new frame %s", frame)
-            if frame is None:
-                break
-            logs[frame.value] = str(frame.value) + ':' + str(frame) + '\n'
-            self._log_queue.task_done()
-        self.log.debug("out of while True")
+        self._analysed_frames.subscribe(
+            on_next=lambda f: self._on_next(f),
+            on_error=lambda e: self.log.error(e),
+            on_completed=lambda: self._on_completed()
+        )
 
+    def _on_next(self, frame):
+        self._logs[frame.value] = str(frame.value) + ':' + str(frame) + '\n'
+
+    def _on_completed(self):
+        self.log.info('out of while True')
         with open(self._log_file_path, "w+") as file:
-            length = len(logs)
+            length = len(self._logs)
             for i in range(0, length):
-                file.write(logs[i])
-        return 0
+                file.write(self._logs[i])
+
+

@@ -3,30 +3,25 @@ import time
 from abc import ABC, abstractmethod
 
 from core.dataClasses.frame import Frame
-from core.dataClasses.signal import Signal
 
 
 class ImageProcessingInt(ABC):
     @abstractmethod
-    def process(self):
+    def process(self, _observer, _scheduler):
         pass
 
 
 class ImageProcessing(ImageProcessingInt):
-    def process(self):
+    def process(self, _observer, _scheduler):
         pass
 
 
 class ImageProcessingMock(ImageProcessingInt):
-    def __init__(self, processing_queue, management_queue):
+    def __init__(self):
         self._limit = 120
-        self._processing_queue = processing_queue
-        self._management_queue = management_queue
 
-    def process(self):
+    def process(self, _observer, _scheduler):
         for i in range(self._limit):
-            # yield i
             time.sleep(random.uniform(0.01, 0.05))
-            self._processing_queue.put(Frame(i))
-        self._processing_queue.put(None)
-        self._management_queue.put(Signal.IMG_PROCESSING_FINISHED)
+            _observer.on_next(Frame(i))
+        _observer.on_completed()

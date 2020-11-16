@@ -10,6 +10,9 @@ from core.actorClasses.outputGenerator import OutputGenerator
 from core.dataClasses.frame import Frame
 from core.dataClasses.signal import Signal
 
+from rx import create, operators as ops
+from rx.subject import Subject
+
 
 def singleton(class_):
     instances = {}
@@ -32,6 +35,7 @@ class Manager:
         self._debug = _config['debug']
         self._mock = _config['mock']
 
+        # logger declaration
         self.log = logging.getLogger(__name__)
 
         ch = logging.StreamHandler(stream=sys.stdout)
@@ -43,114 +47,104 @@ class Manager:
                                       datefmt='%H:%M:%S')
         ch.setFormatter(formatter)
         self.log.addHandler(ch)
+        # end of logger declaration
 
         self._max_workers = _config['manager']['max_workers']
         self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
         self._futures = []
 
-        self._producer_queue = queue.Queue(maxsize=5)
-        self._processing_queue = queue.Queue(maxsize=5)
-        self._management_queue = queue.Queue(maxsize=2)
-        self._log_queue = queue.Queue(maxsize=10)
-        self._video_queue = queue.Queue(maxsize=10)
-
-        self._is_processing_running = True
-        self._is_analyse_running = True
-        self._status = Signal.MAN_RUNNING
-
         self._show_futures_status = _config['logging']['show_futures_status']
         self._log_file_path = _config['output']['log_file_path']
+
+        self._analysed_frames = Subject()
+        self._file_generation_status = False
 
         if self._mock == 0:
             self._img_processing_class = ImageProcessing
             self._img_analyse_class = ImageAnalyse
         else:
-            self.log.warning("MOCK are classes used")
+            self.log.warning("MOCK classes are used")
             self._img_processing_class = ImageProcessingMock
             self._img_analyse_class = ImageAnalyseMock
 
-    def _management(self):
-        while True:
-            signal = self._management_queue.get()
-            if signal == Signal.IMG_PROCESSING_FINISHED:
-                self._is_processing_running = False
-            elif signal == Signal.MAN_SUBMITTING_FINISHED:
-                break
-            self._management_queue.task_done()
-        self._status = Signal.MAN_STOPPED
-        self.log.info("_management task finished")
-
     def run(self):
         """
-
+        method starts image processing, analysis and output generation.
         :return:
         """
-        threading.Thread(target=self._management).start()
+        threading.Thread(target=self._collect_img_processing).start()
+        threading.Thread(target=self._generate_log_file).start()
 
-        _imgProcessing = self._img_processing_class(self._processing_queue, self._management_queue)
-        threading.Thread(target=_imgProcessing.process).start()
-        threading.Thread(target=self._submit_tasks).start()
-        threading.Thread(target=self._listen_and_send).start()
+    def _collect_img_processing(self):
+        """
+        Method creates instance of image processing class.
+        Handles all incoming Frames, passing it to ThreadPoolExecutor to be analysed.
+        :return:
+        """
+        _img_processing_instance = self._img_processing_class()
+        _img_processing_source = create(_img_processing_instance.process)
 
-        self.log.info("run finished execution")
+        _img_processing_source.subscribe(
+            on_next=lambda f: self._on_next(f),
+            on_error=lambda e: self.log.error(e),
+            on_completed=lambda: self.log.info('Img processing has been completed')
+        )
 
-    def _submit_tasks(self):
-        while self._is_processing_running:
-            imgFrame: Frame = self._processing_queue.get()
-            if imgFrame is None:
-                break
-            fut = self._executor.submit(self._img_analyse_class.analyse, 1, imgFrame, self._producer_queue)
-            fut.add_done_callback(self._callback)
-
-            self._futures.append(fut)
-            self._processing_queue.task_done()
-        self.log.info('(img_processing) no more tasks to submit')
         self._executor.shutdown(wait=True)
         self._futures.clear()
-        self._producer_queue.put(None)
-        self._is_analyse_running = False
+        self._analysed_frames.on_completed()
 
-        # temporary switch for _management method
-        self._management_queue.put(Signal.MAN_SUBMITTING_FINISHED)
-
-        self.log.info('submitting tasks finished')
+    def _on_next(self, frame):
+        """
+        Passes incoming Frame to self._executor for analysis.
+        :param frame: instance of Frame class
+        :return:
+        """
+        fut = self._executor.submit(self._img_analyse_class.analyse, 1, frame)
+        fut.add_done_callback(self._callback)
+        self._futures.append(fut)
 
     def _callback(self, fn):
         """
-        callback method is called after each future finishes. It clears associated future
-        and if specified in config logs frame info
-        :param fn:
+        callback method is called after each future finishes.
+        It sends analysed LicencePlate to self._analysed_frames.
+        It also clears associated future and if specified in config logs frame info.
+        :param fn: frame returned by _img_analyse_class.analyse
         :return:
         """
         if fn.cancelled():
             self.log.warning('canceled')
+            self._analysed_frames.on_error(Exception("Job was cancelled"))
         elif fn.done():
             error = fn.exception()
             if error:
                 self.log.error('error returned: {}'.format(error))
+                self._analysed_frames.on_error(error)
             else:
                 if self._show_futures_status == 1:
                     self.log.info('value returned: {}'.format(fn.result()))
+                self._analysed_frames.on_next(fn.result())
         self._futures.remove(fn)
 
-    def _listen_and_send(self):
-        output_gen = OutputGenerator(self._log_file_path, self._log_queue)
-        threading.Thread(target=output_gen.generate_log_file).start()
-
-        while self._is_analyse_running:
-            res = self._producer_queue.get()
-            self._log_queue.put(res)
-            if res is None:
-                break
-            self.log.debug(res)
-        self._log_queue.put(None)
-        self.log.info('DONE')
+    def _generate_log_file(self):
+        """
+        It invokes Output Generation process.
+        :return:
+        """
+        self._file_generation_status = True
+        output_gen = OutputGenerator(self._log_file_path, self._analysed_frames)
+        output_gen.generate_log_file()
+        self._file_generation_status = False
 
     def mock(self):
+        """
+        Just for test purposes
+        :return:
+        """
         return self._max_workers
 
     def get_status(self):
-        return self._status
+        return self._file_generation_status
 
 
 if __name__ == '__main__':
