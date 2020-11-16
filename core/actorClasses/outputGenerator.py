@@ -27,7 +27,7 @@ class OutputGenerator:
         """
         generates log file as output
         """
-        self.log.debug("enters")
+        self.log.debug("Started collecting logs")
 
         self._analysed_frames.subscribe(
             on_next=lambda f: self._on_next(f),
@@ -39,7 +39,7 @@ class OutputGenerator:
         self._logs[license_plate.id_] = str(license_plate.id_) + ':' + str(license_plate) + '\n'
 
     def _on_completed(self):
-        self.log.info('out of while True')
+        self.log.info('Writing logs to file')
         with open(self._log_file_path, "w+") as file:
             length = len(self._logs)
             for i in range(0, length):
