@@ -63,8 +63,10 @@ class Manager:
         self._show_futures_status = _config['logging']['show_futures_status']
         self._log_file_path = _config['output']['log_file_path']
 
+        # Two streams (Subjects) used as communication channels with OutputGenerator
         self._analysed_frames = Subject()
         self._generate_log_status = Subject()
+        # status of log generating class instance, currently used only in basic mock test (True=busy)
         self._file_generation_status = True
 
         if self._mock == 0:
@@ -109,9 +111,9 @@ class Manager:
 
     def _filter(self, frame: Frame) -> bool:
         """
-        filtering method used by incoming processed images stream.
-        It passes every nth frame to be analysed to optimise program execution.
-        Rest of the frames are directly passed (as LicensePlate) to Output generator instance.
+        filtering method is used by incoming processed images stream.
+        It passes every nth frame to be analysed, to optimise program execution.
+        Rest of the frames are directly passed (as LicensePlate) to the Output generator instance.
         :param frame: Frame: input Frame
         :return: boolean: based on frame id_ returns True or False
         """
@@ -123,8 +125,8 @@ class Manager:
 
     def _on_next(self, frame: Frame):
         """
-        Passes incoming Frame to self._executor for analysis.
-        :param frame: instance of Frame class
+        Passes incoming processed image (from ImgProcessing) as Frame to self._executor for analysis.
+        :param frame: instance of a Frame class
         :return:
         """
         fut = self._executor.submit(self._img_analyse_class.analyse, 1, frame)
@@ -157,6 +159,8 @@ class Manager:
     def _generate_log_file(self):
         """
         It invokes Output Generation process.
+        The _generate_log_status is stream (emitter is OutputGenerator) containing status.
+        _analysed_frames is stream of analysed LicensePlates.
         :return:
         """
 
