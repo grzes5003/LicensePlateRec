@@ -1,5 +1,6 @@
 import random
 import time
+
 import cv2
 from abc import ABC, abstractmethod
 
@@ -10,6 +11,7 @@ class ImageProcessingInt(ABC):
     """
     Base Abstract class aka Interface for Image processing class
     """
+
     @abstractmethod
     def process(self, _observer, _scheduler):
         """
@@ -21,13 +23,22 @@ class ImageProcessingInt(ABC):
         :return:
         """
 
-        video = cv2.VideoCapture(self.path)
+        raise NotImplemented
 
-        if video.isOpened() == False:
+
+class ImageProcessing(ImageProcessingInt):
+
+    def __init__(self, _path):
+        self._path = _path
+
+    def process(self, _observer, _scheduler):
+        video = cv2.VideoCapture(self._path)
+
+        if not video.isOpened():
             _observer.on_error('FILE NOT FOUND OR WRONG CODEC')
 
         # Find OpenCV version
-        (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+        (major_ver, minor_ver, subminor_ver) = cv2.__version__.split('.')
 
         if int(major_ver) < 3:
             fps = video.get(cv2.cv.CV_CAP_PROP_FPS)
@@ -38,11 +49,10 @@ class ImageProcessingInt(ABC):
         while video.isOpened():
             ret, frame = video.read()
 
-            if ret == True:
+            if ret:
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-                f = Frame()
-                f.id_ = curr_frame
-                f.time_stamp_ = curr_frame/fps
+                f = Frame(curr_frame)
+                f.time_stamp_ = curr_frame / fps
                 f.img_ = gray
                 _observer.on_next(f)
             else:
@@ -53,16 +63,9 @@ class ImageProcessingInt(ABC):
         video.release()
         _observer.on_completed()
 
-        #raise NotImplemented
-
-
-class ImageProcessing(ImageProcessingInt):
-    def process(self, _observer, _scheduler):
-        pass
-
 
 class ImageProcessingMock(ImageProcessingInt):
-    def __init__(self):
+    def __init__(self, _):
         self._limit = 120
 
     def process(self, _observer, _scheduler):

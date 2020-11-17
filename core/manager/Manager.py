@@ -41,6 +41,7 @@ class Manager:
         self._debug = _config['debug']
         self._mock = _config['mock']
         self._nth_analysed = _config['manager']['nth_analysed']
+        self._video_input_path = _config['input']['video_input_path']
 
         # logger declaration
         self.log = logging.getLogger(__name__)
@@ -96,7 +97,7 @@ class Manager:
         Handles all incoming Frames, passing it to ThreadPoolExecutor to be analysed.
         :return:
         """
-        _img_processing_instance = self._img_processing_class()
+        _img_processing_instance = self._img_processing_class(self._video_input_path)
         _img_processing_source = create(_img_processing_instance.process)
 
         _img_processing_source.pipe(ops.filter(lambda f: self._filter(f))).subscribe(
