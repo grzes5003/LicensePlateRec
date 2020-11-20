@@ -1,6 +1,12 @@
 import random
 import time
+import pprint
+import logging
+import sys
 from abc import abstractmethod, ABC
+from openalpr import Alpr
+from argparse import ArgumentParser
+from core.dataClasses import LicensePlate
 
 
 class ImageAnalyseInt(ABC):
@@ -13,6 +19,8 @@ class ImageAnalyseInt(ABC):
 class ImageAnalyse(ImageAnalyseInt):
     @staticmethod
     def analyse(_id, frame, queue):
+
+
         pass
 
 
