@@ -1,6 +1,12 @@
 import random
 import time
+import pprint
+import logging
+import sys
 from abc import abstractmethod, ABC
+from openalpr import Alpr
+from argparse import ArgumentParser
+from core.dataClasses import LicensePlate
 
 from core.dataClasses.LicensePlate import LicensePlate
 from core.dataClasses.frame import Frame
