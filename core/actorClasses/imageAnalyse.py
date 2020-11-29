@@ -6,7 +6,7 @@ from abc import abstractmethod, ABC
 from core.dataClasses import LicensePlate
 from pathlib import Path
 
-# module files are inside another directory, so python search dirs should be expanded
+# module files are inside another directory, so python dirs search should be expanded
 sys.path.append("alpr")
 from lprec import Alpr
 
