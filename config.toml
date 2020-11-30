@@ -1,5 +1,5 @@
 debug=0                                 # enable/disable debug mode (1/0)
-mock=1
+mock=0
 
 [manager]
     max_workers=4                       # number of workers deployed for img analyse
@@ -9,7 +9,7 @@ mock=1
     show_futures_status=0               # display each frame as it is analysed
 
 [input]
-    video_input_path='../../test_vid.mp4'
+    video_input_path='../../grupaA3.mp4'
 
 [output]
     log_file_path='../log.log'          # output path for log file

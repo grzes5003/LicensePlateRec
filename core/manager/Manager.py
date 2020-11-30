@@ -4,7 +4,7 @@ import threading
 from concurrent.futures.thread import ThreadPoolExecutor
 from copy import deepcopy
 
-from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse
+from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse, MLInstance
 from core.actorClasses.imageProcessing import ImageProcessingMock, ImageProcessing
 from core.actorClasses.outputGenerator import OutputGenerator
 
@@ -50,7 +50,7 @@ class Manager:
             self.log.setLevel(logging.DEBUG)
         else:
             self.log.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s|%(threadName)s|%(name)s|%(levelname)s|%(message)s',
+        formatter = logging.Formatter('%(asctime)s|%(threadName)s|%(name)s|%(lineno)d|%(levelname)s|%(message)s',
                                       datefmt='%H:%M:%S')
         ch.setFormatter(formatter)
         self.log.addHandler(ch)
@@ -78,6 +78,7 @@ class Manager:
             self._img_analyse_class = ImageAnalyseMock
 
         self._last_analysed_frame = Frame(-1)
+        ml_instance = MLInstance()
 
     def run(self):
         """

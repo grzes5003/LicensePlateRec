@@ -10,13 +10,14 @@ from pathlib import Path
 from core.dataClasses.LicensePlate import LicensePlate
 from core.dataClasses.frame import Frame
 
+from openalpr_x86.python.build.lib.openalpr.openalpr import Alpr
+
 # module files are inside another directory, so python dirs search should be expanded
 ROOT_DIR = Path(__file__).parent.parent.parent
-sys.path.append(Path.joinpath(ROOT_DIR, "openalpr"))
-from alpr.lprec import Alpr
+# sys.path.append(Path.joinpath(ROOT_DIR, "openalpr"))
 
-PATH_TO_CONF = Path.joinpath(ROOT_DIR, "alpr", "config.alpr.conf")
-PATH_TO_RUN_TIME = Path.joinpath(ROOT_DIR, "alpr", "runtime-data")
+PATH_TO_CONF = Path.joinpath(ROOT_DIR, "config.alpr.conf")
+PATH_TO_RUN_TIME = Path.joinpath(ROOT_DIR, "openalpr_x86", "runtime_data")
 COUNTRY = "eu"
 REGION = "pl"
 
@@ -38,6 +39,7 @@ class MLInstance(metaclass=Singleton):
 
     All created instances of a singleton class will be pointing on the same object.
     """
+
     def __init__(self):
         # logger for library-related messages
         log = logging.getLogger(__name__)
@@ -45,23 +47,25 @@ class MLInstance(metaclass=Singleton):
         if ['debug'] == 1:
             print('elo')
         log.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(threadName)s - %(levelname)s - %(message)s',
+        formatter = logging.Formatter('%(asctime)s ML- %(name)s - %(threadName)s - %(levelname)s - %(message)s',
                                       datefmt='%H:%M:%S')
         ch.setFormatter(formatter)
         log.addHandler(ch)
 
-        recognize_alg = Alpr(COUNTRY, str(PATH_TO_CONF), str(PATH_TO_RUN_TIME))
+        self.recognize_alg = Alpr(bytes(COUNTRY, encoding='utf-8'), bytes(str(PATH_TO_CONF), encoding='utf-8'),
+                                  bytes(str(PATH_TO_RUN_TIME), encoding='utf-8'))
 
         # verify library's availability
-        if not recognize_alg.is_loaded():
+        if not self.recognize_alg.is_loaded():
             log.error("Error loading a library")
         else:
-            log.info("Starting detection process...")
+            # log.info("Starting detection process...")
+            pass
 
         # TODO: clean up unnecessary parameters, given by default
-        recognize_alg.set_top_n(1)
-        recognize_alg.set_country(COUNTRY)
-        recognize_alg.set_default_region(REGION)
+        self.recognize_alg.set_top_n(1)
+        # self.recognize_alg.set_country(COUNTRY)
+        self.recognize_alg.set_default_region(bytes(REGION, encoding='utf-8'))
 
 
 class ImageAnalyseInt(ABC):
@@ -80,11 +84,17 @@ class ImageAnalyse(ImageAnalyseInt):
         :param frame: dataclass object containing a frame for the analysis.
         :return: Modified frame containing a list of LicensePlate objects referring to the found plates.
         """
+        logging.debug("ENTERED ANALYSE")
+
         ml_instance = MLInstance()
         # model requires bytes array, so read image in binary mode
         # TODO define frame
         # jpeg_bytes = open(frame, "rb").read()
         jpeg_bytes = bytes(frame.img_)
+
+        logging.debug(type(jpeg_bytes))
+        logging.debug(jpeg_bytes[:10])
+
         results = ml_instance.recognize_alg.recognize_array(jpeg_bytes)
 
         for regions in results['results']:

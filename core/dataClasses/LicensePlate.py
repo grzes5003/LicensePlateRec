@@ -5,5 +5,5 @@ from dataclasses import dataclass, field
 class LicensePlate:
     plate_value: str
     confidence: float
-    coordinates: dict
-    process_time: float
+    coordinates: dict = field(repr=False)
+    process_time: float = field(repr=False)
