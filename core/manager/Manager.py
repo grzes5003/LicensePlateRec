@@ -11,7 +11,6 @@ from core.actorClasses.outputGenerator import OutputGenerator
 from rx import create, operators as ops
 from rx.subject import Subject
 
-from core.dataClasses.LicensePlate import LicensePlate
 from core.dataClasses.frame import Frame
 
 
@@ -78,7 +77,7 @@ class Manager:
             self._img_processing_class = ImageProcessingMock
             self._img_analyse_class = ImageAnalyseMock
 
-        self._last_analysed_frame = LicensePlate(-1)
+        self._last_analysed_frame = Frame(-1)
 
     def run(self):
         """
@@ -114,7 +113,7 @@ class Manager:
         """
         filtering method is used by incoming processed images stream.
         It passes every nth frame to be analysed, to optimise program execution.
-        Rest of the frames are directly passed (as LicensePlate) to the Output generator instance.
+        Rest of the frames are directly passed to the Output generator instance.
         :param frame: Frame: input Frame
         :return: boolean: based on frame id_ returns True or False
         """
@@ -130,7 +129,7 @@ class Manager:
         :param frame: instance of a Frame class
         :return:
         """
-        fut = self._executor.submit(self._img_analyse_class.analyse, 1, frame)
+        fut = self._executor.submit(self._img_analyse_class.analyse, frame)
         fut.add_done_callback(self._callback)
         self._futures.append(fut)
 
@@ -161,7 +160,7 @@ class Manager:
         """
         It invokes Output Generation process.
         The _generate_log_status is stream (emitter is OutputGenerator) containing status.
-        _analysed_frames is stream of analysed LicensePlates.
+        _analysed_frames is stream of analysed Frames with [LicensePlates].
         :return:
         """
 
