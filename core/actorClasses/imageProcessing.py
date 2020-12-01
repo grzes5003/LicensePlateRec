@@ -50,10 +50,13 @@ class ImageProcessing(ImageProcessingInt):
             ret, frame = video.read()
 
             if ret:
+                # TODO change that
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 f = Frame(curr_frame)
-                f.time_stamp_ = curr_frame / fps
-                f.img_ = gray
+                f.time_stamp_ = curr_frame # curr_frame / fps
+                _, jpeg_bytes = cv2.imencode('.jpg', gray)
+                jpeg_bytes = jpeg_bytes.tobytes()
+                f.img_ = jpeg_bytes
                 _observer.on_next(f)
             else:
                 break

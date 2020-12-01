@@ -12,11 +12,14 @@ from core.dataClasses.frame import Frame
 
 from openalpr_x86.python.build.lib.openalpr.openalpr import Alpr
 
+import cv2
+
 # module files are inside another directory, so python dirs search should be expanded
 ROOT_DIR = Path(__file__).parent.parent.parent
 # sys.path.append(Path.joinpath(ROOT_DIR, "openalpr"))
 
-PATH_TO_CONF = Path.joinpath(ROOT_DIR, "config.alpr.conf")
+# PATH_TO_CONF = Path.joinpath(ROOT_DIR, "config.alpr.conf")
+PATH_TO_CONF = Path.joinpath(ROOT_DIR, "openalpr_x86", "openalpr.conf")
 PATH_TO_RUN_TIME = Path.joinpath(ROOT_DIR, "openalpr_x86", "runtime_data")
 COUNTRY = "eu"
 REGION = "pl"
@@ -44,8 +47,6 @@ class MLInstance(metaclass=Singleton):
         # logger for library-related messages
         log = logging.getLogger(__name__)
         ch = logging.StreamHandler(stream=sys.stdout)
-        if ['debug'] == 1:
-            print('elo')
         log.setLevel(logging.DEBUG)
         formatter = logging.Formatter('%(asctime)s ML- %(name)s - %(threadName)s - %(levelname)s - %(message)s',
                                       datefmt='%H:%M:%S')
@@ -63,7 +64,7 @@ class MLInstance(metaclass=Singleton):
             pass
 
         # TODO: clean up unnecessary parameters, given by default
-        self.recognize_alg.set_top_n(1)
+        self.recognize_alg.set_top_n(5)
         # self.recognize_alg.set_country(COUNTRY)
         self.recognize_alg.set_default_region(bytes(REGION, encoding='utf-8'))
 
@@ -90,16 +91,16 @@ class ImageAnalyse(ImageAnalyseInt):
         # model requires bytes array, so read image in binary mode
         # TODO define frame
         # jpeg_bytes = open(frame, "rb").read()
-        jpeg_bytes = bytes(frame.img_)
+        # jpeg_bytes = frame.img_.tobytes()
+        # _, jpeg_bytes = cv2.imencode('.jpg', frame.img_)
+        # jpeg_bytes = jpeg_bytes.tobytes()
+        # jpeg_bytes = open(str(Path.joinpath(ROOT_DIR, "openalpr_x86", "samples", "eu-3.jpg")), "rb").read()
 
-        logging.debug(type(jpeg_bytes))
-        logging.debug(jpeg_bytes[:10])
-
-        results = ml_instance.recognize_alg.recognize_array(jpeg_bytes)
+        results = ml_instance.recognize_alg.recognize_array(frame.img_)
 
         for regions in results['results']:
-            plate = LicensePlate.LicensePlate(str(regions['plate']), float(regions['confidence']),
-                                              dict(regions['coordinates']), float(regions['processing_time_ms']))
+            plate = LicensePlate(str(regions['plate']), float(regions['confidence']),
+                                 dict(regions['coordinates']), float(regions['processing_time_ms']))
             frame.license_plates_.append(plate)
         return frame
 

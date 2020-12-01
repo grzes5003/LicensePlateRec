@@ -5,6 +5,7 @@ from rx.subject import Subject
 from rx import create
 
 from core.dataClasses.LicensePlate import LicensePlate
+from core.dataClasses.frame import Frame
 
 
 class OutputGenerator:
@@ -35,8 +36,8 @@ class OutputGenerator:
             on_completed=lambda: self._on_completed()
         )
 
-    def _on_next(self, license_plate: LicensePlate):
-        self._logs[license_plate.id_] = str(license_plate.id_) + ':' + str(license_plate) + '\n'
+    def _on_next(self, frame: Frame):
+        self._logs[frame.id_] = str(frame.id_) + ':' + str(frame) + '\n'
 
     def _on_completed(self):
         self.log.info('Writing logs to file')

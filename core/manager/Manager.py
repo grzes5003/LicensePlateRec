@@ -78,7 +78,7 @@ class Manager:
             self._img_analyse_class = ImageAnalyseMock
 
         self._last_analysed_frame = Frame(-1)
-        ml_instance = MLInstance()
+        _ = MLInstance()
 
     def run(self):
         """
