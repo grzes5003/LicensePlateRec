@@ -2,7 +2,7 @@ debug=0                                 # enable/disable debug mode (1/0)
 mock=0
 
 [manager]
-    max_workers=1                       # number of workers deployed for img analyse
+    max_workers=4                       # number of workers deployed for img analyse
     nth_analysed=2                     # every nth frame from stream will be analysed and the rest "intrapolated"
 
 [logging]

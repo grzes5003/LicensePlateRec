@@ -1,16 +1,14 @@
 import logging
 import sys
 import threading
-from concurrent.futures.thread import ThreadPoolExecutor
-from copy import deepcopy
-
-from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse, MLInstance
-from core.actorClasses.imageProcessing import ImageProcessingMock, ImageProcessing
-from core.actorClasses.outputGenerator import OutputGenerator
+from concurrent.futures.process import ProcessPoolExecutor
 
 from rx import create, operators as ops
 from rx.subject import Subject
 
+from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse, MLInstance
+from core.actorClasses.imageProcessing import ImageProcessingMock, ImageProcessing
+from core.actorClasses.outputGenerator import OutputGenerator
 from core.dataClasses.frame import Frame
 
 
@@ -57,7 +55,7 @@ class Manager:
         # end of logger declaration
 
         self._max_workers = _config['manager']['max_workers']
-        self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
+        self._executor = ProcessPoolExecutor(max_workers=self._max_workers)
         self._futures = []
 
         self._show_futures_status = _config['logging']['show_futures_status']
@@ -77,8 +75,7 @@ class Manager:
             self._img_processing_class = ImageProcessingMock
             self._img_analyse_class = ImageAnalyseMock
 
-        self._last_analysed_frame = Frame(-1)
-        _ = MLInstance()
+        # self._last_analysed_frame = Frame(-1)
 
     def run(self):
         """
@@ -119,9 +116,10 @@ class Manager:
         :return: boolean: based on frame id_ returns True or False
         """
         if frame.id_ % self._nth_analysed == 0:
+            frame.is_analysed_ = True
             return True
-        self._last_analysed_frame.id_ = frame.id_
-        self._analysed_frames.on_next(self._last_analysed_frame)
+        # self._last_analysed_frame.id_ = frame.id_
+        self._analysed_frames.on_next(frame)
         return False
 
     def _on_next(self, frame: Frame):
@@ -153,7 +151,7 @@ class Manager:
             else:
                 if self._show_futures_status == 1:
                     self.log.info('value returned: {}'.format(fn.result()))
-                self._last_analysed_frame = fn.result()
+                # self._last_analysed_frame = fn.result()
                 self._analysed_frames.on_next(fn.result())
         self._futures.remove(fn)
 
