@@ -7,5 +7,8 @@ License plate recognition and classification software
 
 ## Getting started
 
-## General overview
+## Architecture overview
+![alt text](https://github.com/grzes5003/LicensePlateRec/blob/ml-flexing/readme/Arch_diagram.png)
 
+## Machine Learning algorithm overview
+![alt text](https://github.com/grzes5003/LicensePlateRec/blob/ml-flexing/readme/Arch_diagram.png)
