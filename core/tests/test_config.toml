@@ -1,8 +1,8 @@
 debug=0
-mock=1
+mock=0
 
 [manager]
-    max_workers=5
+    max_workers=4
     nth_analysed=5
 
 [logging]
