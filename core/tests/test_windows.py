@@ -1,4 +1,5 @@
 import os
+import time
 
 import toml
 from core.manager.Manager import Manager
@@ -30,4 +31,11 @@ def test_windows():
     while manager.get_status():
         pass
 
+    time.sleep(2)
+
     assert os.path.isfile('core/tests/test_log.log') is True
+
+    with open('core/tests/test_log.log', 'r') as f:
+        Lines = f.readlines()
+        for line in Lines:
+            print(line)
