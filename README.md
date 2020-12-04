@@ -57,7 +57,7 @@ Ideally, this will produce a correctly oriented plate image without rotation or 
 * **Edge search.** In this phase, the edges of the license plate will be searched for. 
  It is essential that the detection phase will only be responsible for identifying a possible region in which a license plate may exist. 
  So to separate plate itself from the region this stage is used.
- ![alt text](https://github.com/grzes5003/LicensePlateRec/blob/ml-flexing/readme/edge.png)
+ <div align=”center”> ![alt text](https://github.com/grzes5003/LicensePlateRec/blob/ml-flexing/readme/edge.png) </div>
 
 * **Postprocess.** Given a list of all possible OCR characters and confidences, post processing will determine the best possible plate letter combinations.
 It will organize candidates list and then apply *regex* expressions in order to filter out the results. 
