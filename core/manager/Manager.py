@@ -165,6 +165,7 @@ class Manager:
 
         def _switch_status():
             self._file_generation_status = False
+            self.log.info("_file_generation_status set to false")
 
         self._generate_log_status.subscribe(
             on_next=lambda m: self.log.info('Output generator status: {}'.format(m)),

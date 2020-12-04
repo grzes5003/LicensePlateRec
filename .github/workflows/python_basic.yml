@@ -1,6 +1,9 @@
 name: Python Basic Build test
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:

@@ -9,7 +9,7 @@ mock=1
     show_futures_status=0
 
 [input]
-    video_input_path='../../test_vid.mp4'
+    video_input_path='../../grupaA1.mp4'
 
 [output]
     log_file_path='core/tests/test_log.log'
