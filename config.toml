@@ -1,5 +1,5 @@
 debug=0                                 # enable/disable debug mode (1/0)
-mock=1
+mock=0
 
 [manager]
     max_workers=4                       # number of workers deployed for img analyse
