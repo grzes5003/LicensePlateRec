@@ -41,8 +41,9 @@ class Manager:
         self._nth_analysed = _config['manager']['nth_analysed']
 
         # resolve to absolute, relative to project the directory, path of video input
-        ROOT_DIR = Path(__file__).parent.parent.parent
-        self._video_input_path = str(Path.joinpath(ROOT_DIR, _config['input']['video_input_path']).resolve())
+        # ROOT_DIR = Path(__file__).parent.parent.parent
+        # self._video_input_path = str(Path.joinpath(ROOT_DIR, _config['input']['video_input_path']).resolve())
+        self._video_input_path = 'D:\\a\\LicensePlateRec\\LicensePlateRec\\grupaA1.mp4'
 
         # logger declaration
         self.log = logging.getLogger(__name__)
