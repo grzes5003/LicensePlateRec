@@ -1,7 +1,9 @@
 import logging
+import os
 import sys
 import threading
 from concurrent.futures.process import ProcessPoolExecutor
+from pathlib import Path
 
 from rx import create, operators as ops
 from rx.subject import Subject
@@ -38,7 +40,10 @@ class Manager:
         self._debug = _config['debug']
         self._mock = _config['mock']
         self._nth_analysed = _config['manager']['nth_analysed']
-        self._video_input_path = _config['input']['video_input_path']
+
+        # resolve to absolute, relative to project the directory, path of video input
+        ROOT_DIR = Path(__file__).parent.parent.parent
+        self._video_input_path = str(Path.joinpath(ROOT_DIR, _config['input']['video_input_path']).resolve())
 
         # logger declaration
         self.log = logging.getLogger(__name__)
