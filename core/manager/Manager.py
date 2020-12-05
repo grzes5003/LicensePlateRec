@@ -46,7 +46,6 @@ class Manager:
 
         # logger declaration
         self.log = logging.getLogger(__name__)
-        self.log.info('Path to input file: %', self._video_input_path)
 
         ch = logging.StreamHandler(stream=sys.stdout)
         if self._debug == 1:
@@ -81,6 +80,7 @@ class Manager:
             self._img_analyse_class = ImageAnalyseMock
 
         # self._last_analysed_frame = Frame(-1)
+        self.log.info('Path to input file: %s', self._video_input_path)
 
     def run(self):
         """
