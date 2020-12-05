@@ -31,5 +31,5 @@ jobs:
       run: |
         pytest core/tests/test_windows.py -s
     - name: Show result
-        run: |
-          dir
+      run: |
+        dir
