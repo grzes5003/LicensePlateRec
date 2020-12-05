@@ -3,7 +3,7 @@ mock=0
 
 [manager]
     max_workers=4                       # number of workers deployed for img analyse
-    nth_analysed=2                     # every nth frame from stream will be analysed and the rest "intrapolated"
+    nth_analysed=4                     # every nth frame from stream will be analysed and the rest "intrapolated"
 
 [logging]
     show_futures_status=0               # display each frame as it is analysed
