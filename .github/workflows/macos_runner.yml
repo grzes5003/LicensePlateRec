@@ -1,4 +1,4 @@
-name: Build and Run tests for windows based platform
+name: Build and Run tests for macos based platform
 
 on:
   push:
@@ -7,11 +7,11 @@ on:
       - master
 
 jobs:
-  Windows-job:
-    name: Run unit tests on Windows
-    runs-on: windows-latest
+  Macos-job:
+    name: Run unit tests on macos
+    runs-on: macos-latest
 
-    steps:
+  steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.x
       uses: actions/setup-python@v2
@@ -27,14 +27,10 @@ jobs:
         pip install -r requirements.txt
         pip install pytest
         pip install pytest-cov
-    - name: Test windows with pytest
+    - name: Test macos with pytest
       run: |
         pytest core/tests/test_windows.py -s
     - name: Show result
       run: |
-        dir
-        type D:\a\LicensePlateRec\LicensePlateRec\core\tests\test_log.log
-
-    - name: Test windows mock with Python
-      run: |
-        pytest core/tests/test_windows_mock.py -s
+        pwd
+        cat core/tests/test_log.log

@@ -9,7 +9,7 @@ def test_windows():
     with open("core/tests/test_config.toml") as file:
         config = toml.load(file)
     config['mock'] = 0
-    config['input']['video_input_path'] = 'D:\\a\\LicensePlateRec\\LicensePlateRec\\grupaA1.mp4'
+    config['input']['video_input_path'] = '../../grupaA1.mp4'
 
     manager = Manager(config)
     manager.run()
@@ -20,4 +20,3 @@ def test_windows():
     time.sleep(5)
 
     assert os.path.isfile('core/tests/test_log.log') is True
-
