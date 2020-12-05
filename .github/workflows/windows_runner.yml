@@ -32,6 +32,6 @@ jobs:
 #        pytest core/tests/test_windows.py -s
 #    - name: Show result
 #        type
-      - name: Show
-        run: |
-          dir
+    - name: Show
+      run: |
+        dir
