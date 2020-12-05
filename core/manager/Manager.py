@@ -43,10 +43,10 @@ class Manager:
         # resolve to absolute, relative to project the directory, path of video input
         ROOT_DIR = Path(__file__).parent.parent.parent
         self._video_input_path = str(Path.joinpath(ROOT_DIR, _config['input']['video_input_path']).resolve())
-        self.log.info('Path to input file: %', self._video_input_path)
 
         # logger declaration
         self.log = logging.getLogger(__name__)
+        self.log.info('Path to input file: %', self._video_input_path)
 
         ch = logging.StreamHandler(stream=sys.stdout)
         if self._debug == 1:
