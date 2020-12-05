@@ -11,26 +11,26 @@ jobs:
     name: Run unit tests on macos
     runs-on: macos-latest
 
-  steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.x
-      uses: actions/setup-python@v2
-      with:
-        # Semantic version range syntax or exact version of a Python version
-        python-version: '3.x'
-        # Optional - x64 or x86 architecture, defaults to x64
-        architecture: 'x64'
-      # You can test your matrix by printing the current Python version
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest
-        pip install pytest-cov
-    - name: Test macos with pytest
-      run: |
-        pytest core/tests/test_windows.py -s
-    - name: Show result
-      run: |
-        pwd
-        cat core/tests/test_log.log
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '3.x'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
+        # You can test your matrix by printing the current Python version
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+          pip install pytest-cov
+      - name: Test macos with pytest
+        run: |
+          pytest core/tests/test_windows.py -s
+      - name: Show result
+        run: |
+          pwd
+          cat core/tests/test_log.log
