@@ -9,6 +9,7 @@ on:
 jobs:
   Macos-job:
     name: Run unit tests on macos
+    if: false
     runs-on: macos-latest
 
     steps:
