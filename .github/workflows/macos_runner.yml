@@ -29,7 +29,7 @@ jobs:
           pip install pytest-cov
       - name: Test macos with pytest
         run: |
-          pytest core/tests/test_windows.py -s
+          pytest core/tests/test_macos.py -s
       - name: Show result
         run: |
           pwd
