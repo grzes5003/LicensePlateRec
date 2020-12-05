@@ -27,10 +27,14 @@ jobs:
         pip install -r requirements.txt
         pip install pytest
         pip install pytest-cov
-    - name: Test with pytest
+    - name: Test windows with pytest
       run: |
         pytest core/tests/test_windows.py -s
     - name: Show result
       run: |
         dir
         type D:\a\LicensePlateRec\LicensePlateRec\core\tests\test_log.log
+
+    - name: Test windows mock with Python
+      run: |
+        pytest core/tests/test_windows_mock.py -s
