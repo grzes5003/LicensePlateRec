@@ -175,6 +175,9 @@ Window {
         btnIconSource: "images/svg_images/cil-description.png"
         anchors.topMargin: 132
         anchors.rightMargin: 10
+        onClicked: {
+            con.openLog()
+        }
     }
 
 

@@ -210,8 +210,8 @@ class Manager:
         :return: float: between 0 and 1
         """
         if self._are_all_processed:
-            if self._generate_log_status:
-                return 1
+            if self._file_generation_status:
+                return 0.7
             return 0.3
         return 0.1
 
@@ -228,6 +228,9 @@ class Manager:
         self._generate_log_status = Subject()
         # status of log generating class instance, currently used only in basic mock test (True=busy)
         self._file_generation_status = True
+
+        self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
+        self._futures = []
 
         # self._last_analysed_frame = Frame(-1)
         self.log.info('Path to input file: %s', self._video_input_path)

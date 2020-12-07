@@ -10,8 +10,10 @@ base = None
 if sys.platform == "win32":
     base = "Win32GUI"
 
+include_files = ['openalpr_x86', 'config.toml', 'gui']
+
 setup(name="test01",
       version="0.1",
       description="My GUI application!",
-      # options={"build_exe": build_exe_options},
+      options={'build_exe': {'include_files': include_files}},
       executables=[Executable("mainGui.py", base=base)])

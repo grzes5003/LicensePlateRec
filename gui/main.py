@@ -1,11 +1,13 @@
 # This Python file uses the following encoding: utf-8
 import os
+import logging
+import sys
 import threading
 from pathlib import Path
 
 import cv2
 import toml
-from PySide2.QtCore import QObject, Slot, QUrl, QProcess
+from PySide2.QtCore import QObject, Slot, QUrl, QProcess, QThread
 
 from core.manager.Manager import Manager
 
@@ -13,10 +15,22 @@ from core.manager.Manager import Manager
 class MainWindow(QObject):
     def __init__(self, root, manager: Manager):
         QObject.__init__(self)
+
+        # logger declaration
+        self.log = logging.getLogger(__name__)
+        ch = logging.StreamHandler(stream=sys.stdout)
+        self.log.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s|%(threadName)s|%(name)s|%(lineno)d|%(levelname)s|%(message)s',
+                                      datefmt='%H:%M:%S')
+        ch.setFormatter(formatter)
+        self.log.addHandler(ch)
+        # end of logger declaration
+
         self._root = root
         self.counter = 0
         self.video_path = ''
         self.dest_path = ''
+        self._log_file_dest = ''
         self._manager = manager
 
     @Slot(str, result=str)
@@ -71,7 +85,7 @@ class MainWindow(QObject):
     @Slot(str, result=str)
     def getDestFolder(self, folder_path):
         self.dest_path = folder_path
-        print("Wybrales " + folder_path)
+        self.log.info("destination path: " + folder_path)
 
         dest = self.dest_path[8:]
         print(dest)
@@ -81,8 +95,13 @@ class MainWindow(QObject):
 
     @Slot()
     def openVideo(self):
-        print(self.video_path)
+        self.log.info(self.video_path)
         os.startfile(self.video_path)
+
+    @Slot()
+    def openLog(self):
+        self.log.info(self._log_file_dest)
+        os.startfile(self._log_file_dest)
 
     @Slot()
     def startAnalyze(self):
@@ -93,7 +112,7 @@ class MainWindow(QObject):
 
     def analyze(self):
         progbar = self._root.findChild(QObject, "progressBar")
-        print(Path(__file__).resolve())
+        self.log.debug(Path(__file__).resolve())
         progbar.setProperty("value", 0.1)
 
         file_name = ''
@@ -105,6 +124,7 @@ class MainWindow(QObject):
             file_name = '/' + str(file_name).split('.')[0] + '_log.log'
 
         dest_path = str(self.dest_path[8:])+str(file_name)
+        self._log_file_dest = dest_path
         self._manager.reset_config(video_input_path=self.video_path[8:],
                                    log_file_path=dest_path)
         self._manager.run()
@@ -112,6 +132,7 @@ class MainWindow(QObject):
         while self._manager.get_status():
             progbar.setProperty("value", self._manager.get_progress())
         progbar.setProperty("value", 1)
+        self.log.info("Finished analysing")
 
 # def run():
 #     app = QGuiApplication(sys.argv)
