@@ -12,8 +12,8 @@ if sys.platform == "win32":
 
 include_files = ['openalpr_x86', 'config.toml', 'gui']
 
-setup(name="test01",
-      version="0.1",
-      description="My GUI application!",
+setup(name="LicensePlateRecGUI",
+      version="0.2",
+      description="LicensePlateRec GUI!",
       options={'build_exe': {'include_files': include_files}},
       executables=[Executable("mainGui.py", base=base)])
