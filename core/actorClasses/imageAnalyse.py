@@ -18,7 +18,7 @@ if getattr(sys, 'frozen', False):
 
 # PATH_TO_CONF = Path.joinpath(ROOT_DIR, "config.alpr.conf")
 
-PATH_TO_CONF = Path.joinpath(ROOT_DIR, "openalpr_x86", "openalpr.conf")
+PATH_TO_CONF = Path.joinpath(ROOT_DIR, "openalpr_x86", "config.alpr.conf")
 PATH_TO_RUN_TIME = Path.joinpath(ROOT_DIR, "openalpr_x86", "runtime_data")
 COUNTRY = "eu"
 REGION = "pl"
@@ -63,7 +63,7 @@ class MLInstance(metaclass=Singleton):
             pass
 
         # TODO: clean up unnecessary parameters, given by default
-        self.recognize_alg.set_top_n(5)
+        # self.recognize_alg.set_top_n(5)
         # self.recognize_alg.set_country(COUNTRY)
         self.recognize_alg.set_default_region(bytes(REGION, encoding='utf-8'))
 
