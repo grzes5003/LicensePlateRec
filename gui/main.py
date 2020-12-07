@@ -1,22 +1,23 @@
 # This Python file uses the following encoding: utf-8
 import os
-import sys
+import threading
 from pathlib import Path
 
 import cv2
 import toml
 from PySide2.QtCore import QObject, Slot, QUrl, QProcess
 
+from core.manager.Manager import Manager
+
 
 class MainWindow(QObject):
-    def __init__(self, root):
+    def __init__(self, root, manager: Manager):
         QObject.__init__(self)
         self._root = root
         self.counter = 0
         self.video_path = ''
         self.dest_path = ''
-        self._p = QProcess()
-        self.get_base_prefix_compat()
+        self._manager = manager
 
     @Slot(str, result=str)
     def getSourceVid(self, file_path):
@@ -87,46 +88,30 @@ class MainWindow(QObject):
     def startAnalyze(self):
         progbar = self._root.findChild(QObject, "progressBar")
         progbar.setProperty("value", 0)
-        # thr = threading.Thread(target=self.analyze)
-        # thr.start()
-        self.analyze()
+        thr = threading.Thread(target=self.analyze)
+        thr.start()
 
     def analyze(self):
         progbar = self._root.findChild(QObject, "progressBar")
-        import toml
-
         print(Path(__file__).resolve())
-
-        with open("config.toml") as file:
-            config = toml.load(file)
-
-        self._p.readyReadStandardOutput.connect(self.handle_stdout)
-        self._p.readyReadStandardError.connect(self.handle_stderr)
-        if config['standalone'] == 0:
-            self._p.start("python", ['mainCore.py', self.video_path[8:], self.dest_path[8:]])
-            self._p.finished.connect(self.process_finished)
         progbar.setProperty("value", 0.1)
 
-    def handle_stdout(self):
-        data = self._p.readAllStandardOutput()
-        stdout = bytes(data).decode("utf8")
-        print(stdout)
+        file_name = ''
+        if '\\' in self.video_path:
+            file_name = self.video_path.split('\\')[-1]
+            file_name = '\\' + str(file_name).split('.')[0] + '_log.log'
+        else:
+            file_name = self.video_path.split('/')[-1]
+            file_name = '/' + str(file_name).split('.')[0] + '_log.log'
 
-    def handle_stderr(self):
-        data = self._p.readAllStandardError()
-        stderr = bytes(data).decode("utf8")
-        print(stderr)
+        dest_path = str(self.dest_path[8:])+str(file_name)
+        self._manager.reset_config(video_input_path=self.video_path[8:],
+                                   log_file_path=dest_path)
+        self._manager.run()
 
-    def process_finished(self):
-        progbar = self._root.findChild(QObject, "progressBar")
+        while self._manager.get_status():
+            progbar.setProperty("value", self._manager.get_progress())
         progbar.setProperty("value", 1)
-        self._p = None
-
-    def get_base_prefix_compat(self):
-        """Get base/real prefix, or sys.prefix if there is none."""
-        print(getattr(sys, "base_prefix", None))
-        print(getattr(sys, "real_prefix", None))
-        print(getattr(sys, "base_prefix", None) or getattr(sys, "real_prefix", None) or sys.prefix)
 
 # def run():
 #     app = QGuiApplication(sys.argv)
