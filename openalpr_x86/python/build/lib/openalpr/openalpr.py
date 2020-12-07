@@ -1,13 +1,28 @@
 import ctypes
 import json
+import os
 import platform
+import sys
+
 
 class Alpr():
     def __init__(self, country, config_file, runtime_dir):
 
         from pathlib import Path
 
-        OPENALPR_PATH = Path(__file__).parent.parent.parent.parent.parent
+        def find_data_file():
+            print("frozen ++++ " + str(getattr(sys, 'frozen', False)))
+            if getattr(sys, 'frozen', False):
+                # The application is frozen
+                datadir = Path.joinpath(Path(os.path.dirname(sys.executable)).resolve(), 'openalpr_x86')
+            else:
+                # The application is not frozen
+                # Change this bit to match where you store your data files:
+                datadir = Path(__file__).parent.parent.parent.parent.parent
+            print("=================== "+str(datadir))
+            return datadir
+
+        OPENALPR_PATH = find_data_file()
 
         # Load the .dll for Windows and the .so for Unix-based
         if platform.system().lower().find("windows") != -1:

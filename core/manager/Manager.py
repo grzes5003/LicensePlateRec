@@ -2,6 +2,7 @@ import logging
 import sys
 import threading
 from concurrent.futures.process import ProcessPoolExecutor
+from concurrent.futures.thread import ThreadPoolExecutor
 
 from rx import create, operators as ops
 from rx.subject import Subject
@@ -10,6 +11,8 @@ from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse
 from core.actorClasses.imageProcessing import ImageProcessingMock, ImageProcessing
 from core.actorClasses.outputGenerator import OutputGenerator
 from core.dataClasses.frame import Frame
+
+import click
 
 
 def singleton(class_):
@@ -55,7 +58,9 @@ class Manager:
         # end of logger declaration
 
         self._max_workers = _config['manager']['max_workers']
-        self._executor = ProcessPoolExecutor(max_workers=self._max_workers)
+        # TODO fix bug; return to ProcessPoolExecutor(max_workers=self._max_workers) version
+        # self._executor = ProcessPoolExecutor(max_workers=self._max_workers)
+        self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
         self._futures = []
 
         self._show_futures_status = _config['logging']['show_futures_status']
@@ -228,6 +233,30 @@ class Manager:
         self.log.info('Path to input file: %s', self._video_input_path)
 
         self._are_all_processed = False
+
+
+@click.command()
+@click.argument('input_file_path', type=click.Path(exists=True))
+@click.argument('output_log_path', type=click.Path(exists=True))
+@click.argument('config_path', type=click.Path(exists=True))
+def cli_entry(input_file_path, output_log_path, config_path):
+    import toml
+
+    with open(config_path) as file:
+        config = toml.load(file)
+    file_name = ''
+    if '\\' in input_file_path:
+        file_name = input_file_path.split('\\')[-1]
+        file_name = '\\' + str(file_name).split('.')[0] + '_log.log'
+    else:
+        file_name = input_file_path.split('/')[-1]
+        file_name = '/' + str(file_name).split('.')[0] + '_log.log'
+
+    config['input']['video_input_path'] = input_file_path
+    config['output']['log_file_path'] = output_log_path + file_name
+
+    manager = Manager(config)
+    manager.run()
 
 
 if __name__ == '__main__':

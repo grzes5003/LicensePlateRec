@@ -14,4 +14,4 @@ setup(name="test01",
       version="0.1",
       description="My GUI application!",
       # options={"build_exe": build_exe_options},
-      executables=[Executable("main.py")])
+      executables=[Executable("mainGui.py", base=base)])

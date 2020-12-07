@@ -1,4 +1,5 @@
 import logging
+import os
 import random
 import sys
 import time
@@ -11,9 +12,12 @@ from openalpr_x86.python.build.lib.openalpr.openalpr import Alpr
 
 # module files are inside another directory, so python dirs search should be expanded
 ROOT_DIR = Path(__file__).parent.parent.parent
+if getattr(sys, 'frozen', False):
+    ROOT_DIR = Path(os.path.dirname(sys.executable)).resolve()
 # sys.path.append(Path.joinpath(ROOT_DIR, "openalpr"))
 
 # PATH_TO_CONF = Path.joinpath(ROOT_DIR, "config.alpr.conf")
+
 PATH_TO_CONF = Path.joinpath(ROOT_DIR, "openalpr_x86", "openalpr.conf")
 PATH_TO_RUN_TIME = Path.joinpath(ROOT_DIR, "openalpr_x86", "runtime_data")
 COUNTRY = "eu"
