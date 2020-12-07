@@ -1,9 +1,17 @@
-from distutils.core import setup
+import sys
+from cx_Freeze import setup, Executable
 
-setup(name='Distutils',
-      version='1.0',
-      description='Python implementation for license plate recognition system',
-      author='TBA',
-      author_email='mail@example.com',
-      packages=['core.manager', 'core.dataClasses', 'core', 'core.actorClasses'],
-      )
+# Dependencies are automatically detected, but it might need fine tuning.
+build_exe_options = {"packages": ["os", "toml", "rx", "opencv-python", "PySide2"], "excludes": ["tkinter"]}
+
+# GUI applications require a different base on Windows (the default is for a
+# console application).
+base = None
+if sys.platform == "win32":
+    base = "Win32GUI"
+
+setup(name="test01",
+      version="0.1",
+      description="My GUI application!",
+      # options={"build_exe": build_exe_options},
+      executables=[Executable("main.py")])

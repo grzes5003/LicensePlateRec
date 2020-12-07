@@ -1,18 +1,13 @@
-import random
-import time
 import logging
+import random
 import sys
-import os
+import time
 from abc import abstractmethod, ABC
-from core.dataClasses import LicensePlate
 from pathlib import Path
 
 from core.dataClasses.LicensePlate import LicensePlate
 from core.dataClasses.frame import Frame
-
 from openalpr_x86.python.build.lib.openalpr.openalpr import Alpr
-
-import cv2
 
 # module files are inside another directory, so python dirs search should be expanded
 ROOT_DIR = Path(__file__).parent.parent.parent

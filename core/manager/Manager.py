@@ -2,12 +2,11 @@ import logging
 import sys
 import threading
 from concurrent.futures.process import ProcessPoolExecutor
-from pathlib import Path
 
 from rx import create, operators as ops
 from rx.subject import Subject
 
-from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse, MLInstance
+from core.actorClasses.imageAnalyse import ImageAnalyseMock, ImageAnalyse
 from core.actorClasses.imageProcessing import ImageProcessingMock, ImageProcessing
 from core.actorClasses.outputGenerator import OutputGenerator
 from core.dataClasses.frame import Frame
@@ -79,6 +78,8 @@ class Manager:
         # self._last_analysed_frame = Frame(-1)
         self.log.info('Path to input file: %s', self._video_input_path)
 
+        self._are_all_processed = False
+
     def run(self):
         """
         method starts image processing, analysis and output generation.
@@ -99,10 +100,14 @@ class Manager:
         _img_processing_instance = self._img_processing_class(self._video_input_path)
         _img_processing_source = create(_img_processing_instance.process)
 
+        def on_complete_processing():
+            self.log.info('Img processing has been completed')
+            self._are_all_processed = True
+
         _img_processing_source.pipe(ops.filter(lambda f: self._filter(f))).subscribe(
             on_next=lambda f: self._on_next(f),
             on_error=lambda e: self.log.error(e),
-            on_completed=lambda: self.log.info('Img processing has been completed')
+            on_completed=lambda: on_complete_processing()
         )
 
         self._executor.shutdown(wait=True)
@@ -153,7 +158,6 @@ class Manager:
             else:
                 if self._show_futures_status == 1:
                     self.log.info('value returned: {}'.format(fn.result()))
-                # self._last_analysed_frame = fn.result()
                 self._analysed_frames.on_next(fn.result())
         self._futures.remove(fn)
 
@@ -193,6 +197,37 @@ class Manager:
         :return:
         """
         return self._file_generation_status
+
+    def get_progress(self) -> float:
+        """
+        Returns number between 0 and 1,
+        indicating progress file analysing
+        :return: float: between 0 and 1
+        """
+        if self._are_all_processed:
+            if self._generate_log_status:
+                return 1
+            return 0.3
+        return 0.1
+
+    def reset_config(self, video_input_path=None, log_file_path=None):
+
+        if video_input_path is not None:
+            self._video_input_path = video_input_path
+
+        if log_file_path is not None:
+            self._log_file_path = log_file_path
+
+        # Two streams (Subjects) used as communication channels with OutputGenerator
+        self._analysed_frames = Subject()
+        self._generate_log_status = Subject()
+        # status of log generating class instance, currently used only in basic mock test (True=busy)
+        self._file_generation_status = True
+
+        # self._last_analysed_frame = Frame(-1)
+        self.log.info('Path to input file: %s', self._video_input_path)
+
+        self._are_all_processed = False
 
 
 if __name__ == '__main__':
