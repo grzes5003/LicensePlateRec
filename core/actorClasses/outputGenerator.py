@@ -2,10 +2,11 @@ import logging
 import sys
 from typing import Dict
 
+import cv2
+import numpy as np
+from cv2.cv2 import VideoWriter_fourcc, VideoWriter
 from rx.subject import Subject
-from rx import create
 
-from core.dataClasses.LicensePlate import LicensePlate
 from core.dataClasses.frame import Frame
 
 
@@ -45,7 +46,12 @@ class OutputGenerator:
 
     def _on_completed(self):
         self.log.info('Writing logs to file')
-        with open(self._log_file_path, "w+") as file:
+        with open(self._log_file_path + '.log', "w+") as file:
+            _name = self._log_file_path + '.mp4'
+            _fourcc = VideoWriter_fourcc(*'mp4v')
+            _y, _x, _ = self._logs[1].img_.shape
+            _out = VideoWriter(_name, _fourcc, self._logs[1].fps_, (_x, _y))
+
             length = len(self._logs)
             for i in range(0, length):
 
@@ -60,4 +66,11 @@ class OutputGenerator:
                         self._logs[i].license_plates_ = self._logs[index].license_plates_
                 frame = self._logs[i]
                 file.write(str(frame.id_) + ':' + str(frame) + '\n')
+
+                for _plates in self._logs[i].license_plates_:
+                    pts = np.array([[e['x'], e['y']] for e in _plates.coordinates], np.int32)
+                    pts = pts.reshape((-1, 1, 2))
+                    cv2.polylines(self._logs[i].img_, [pts], True, (0, 20, 200), thickness=2)
+
+                _out.write(frame.img_)
         self._status_callback.on_completed()

@@ -51,12 +51,10 @@ class ImageProcessing(ImageProcessingInt):
 
             if ret:
                 # TODO change that
-                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 f = Frame(curr_frame)
                 f.time_stamp_ = curr_frame # curr_frame / fps
-                _, jpeg_bytes = cv2.imencode('.jpg', gray)
-                jpeg_bytes = jpeg_bytes.tobytes()
-                f.img_ = jpeg_bytes
+                f.img_ = frame
+                f.fps_ = fps
                 _observer.on_next(f)
             else:
                 break

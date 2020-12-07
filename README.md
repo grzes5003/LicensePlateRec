@@ -99,12 +99,6 @@ requires modification of source code.
 ### Binary
 Download latest release package, unzip, and run `mainGui.exe`
 
-
-## Known Issues
-* Only one file can be analysed in one session
-* If more than one process is used, program crashes
-* Video file preview sometimes is taken from different file
-
 ### Custom Build
 
 In order to build the project,
@@ -117,6 +111,13 @@ customise `setup*Exe.py` file if needed and run:
 `python setupGuiExe.py build` (only Gui)
 or 
 `python setupCoreExe.py build` (only CLI)
+
+
+## Known Issues
+* Only one file can be analysed in one session
+* If more than one process is used, program crashes
+* Video file preview sometimes is taken from different file
+
 
 
 

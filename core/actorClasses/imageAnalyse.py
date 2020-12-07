@@ -6,6 +6,8 @@ import time
 from abc import abstractmethod, ABC
 from pathlib import Path
 
+import cv2
+
 from core.dataClasses.LicensePlate import LicensePlate
 from core.dataClasses.frame import Frame
 from openalpr_x86.python.build.lib.openalpr.openalpr import Alpr
@@ -69,6 +71,12 @@ class ImageAnalyseInt(ABC):
     @staticmethod
     @abstractmethod
     def analyse(frame: Frame) -> Frame:
+        """
+        Analyse method searches for license plate on particular frame, as an result
+        it modifies LicensePlates array.
+        :param frame:
+        :return:
+        """
         raise NotImplemented
 
 
@@ -85,18 +93,15 @@ class ImageAnalyse(ImageAnalyseInt):
 
         ml_instance = MLInstance()
         # model requires bytes array, so read image in binary mode
-        # TODO define frame
-        # jpeg_bytes = open(frame, "rb").read()
-        # jpeg_bytes = frame.img_.tobytes()
-        # _, jpeg_bytes = cv2.imencode('.jpg', frame.img_)
-        # jpeg_bytes = jpeg_bytes.tobytes()
-        # jpeg_bytes = open(str(Path.joinpath(ROOT_DIR, "openalpr_x86", "samples", "eu-3.jpg")), "rb").read()
+        gray = cv2.cvtColor(frame.img_, cv2.COLOR_BGR2GRAY)
+        _, jpeg_bytes = cv2.imencode('.jpg', gray)
+        jpeg_bytes = jpeg_bytes.tobytes()
 
-        results = ml_instance.recognize_alg.recognize_array(frame.img_)
+        results = ml_instance.recognize_alg.recognize_array(jpeg_bytes)
 
         for regions in results['results']:
             plate = LicensePlate(str(regions['plate']), float(regions['confidence']),
-                                 dict(regions['coordinates']), float(regions['processing_time_ms']))
+                                 regions['coordinates'], float(regions['processing_time_ms']))
             frame.license_plates_.append(plate)
         return frame
 

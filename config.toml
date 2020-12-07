@@ -14,4 +14,4 @@ mock=0
     video_input_path='../../grupaA1.mp4'
 
 [output]
-    log_file_path='../log.log'          # output path for log file
+    log_file_path='../log'          # output path for log file

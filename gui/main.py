@@ -1,13 +1,12 @@
 # This Python file uses the following encoding: utf-8
-import os
 import logging
+import os
 import sys
 import threading
 from pathlib import Path
 
 import cv2
-import toml
-from PySide2.QtCore import QObject, Slot, QUrl, QProcess, QThread
+from PySide2.QtCore import QObject, Slot, QUrl
 
 from core.manager.Manager import Manager
 
@@ -118,10 +117,10 @@ class MainWindow(QObject):
         file_name = ''
         if '\\' in self.video_path:
             file_name = self.video_path.split('\\')[-1]
-            file_name = '\\' + str(file_name).split('.')[0] + '_log.log'
+            file_name = '\\' + str(file_name).split('.')[0] + '_log'
         else:
             file_name = self.video_path.split('/')[-1]
-            file_name = '/' + str(file_name).split('.')[0] + '_log.log'
+            file_name = '/' + str(file_name).split('.')[0] + '_log'
 
         dest_path = str(self.dest_path[8:])+str(file_name)
         self._log_file_dest = dest_path

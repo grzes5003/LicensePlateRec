@@ -10,3 +10,4 @@ class Frame:
     img_: [] = field(compare=False, default=None, repr=False)
     license_plates_: Optional[List[LicensePlate]] = field(compare=False, default_factory=lambda: [])
     is_analysed_: bool = field(compare=False, default=False)
+    fps_: float = field(compare=False, default=0)
