@@ -1,9 +1,9 @@
 # LicensePlateRec
 ![Python Basic Build test](https://github.com/grzes5003/LicensePlateRec/workflows/Python%20Basic%20Build%20test/badge.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-> OpenCV in python 
+> OpenCV, OpenAlpr, RxPy and Qt using Python
  
-License plate recognition and classification software
+License plate recognition and classification software.
 
 ## Architecture overview
 ![alt text](https://github.com/grzes5003/LicensePlateRec/blob/ml-flexing/readme/Arch_diagram.png)
@@ -71,4 +71,72 @@ Ideally, this will produce a correctly oriented plate image without rotation or 
 </p>
 
 * **Postprocess.** Given a list of all possible OCR characters and confidences, post processing will determine the best possible plate letter combinations.
-It will organize candidates list and then apply *regex* expressions in order to filter out the results. 
+It will organize candidates list and then apply *regex* expressions in order to filter out the results.
+
+## Getting started
+Currently the only supported platform is windows. It is possible to run application on different platforms but it 
+requires modification of source code.
+
+###  Windows
+#### Python 
+1) Install basic dependencies
+
+`pip install -r requirements.txt`
+
+2) Software can be run in two modes:
+* without GUI, using only CLI version.
+
+`python mainCore.py [path_to_video_file] [output_destination_path] [config_file_path]`
+
+* with GUI only.
+>####Note
+>
+> To run software in GUI mode it is necessary to install QT 5.x
+> from official project website https://www.qt.io
+
+`python mainGui.py`
+
+### Binary
+Download latest release package, unzip, and run `mainGui.exe`
+
+
+## Known Issues
+* Only one file can be analysed in one session
+* If more than one process is used, program crashes
+* Video file preview sometimes is taken from different file
+
+### Custom Build
+
+In order to build the project,
+install dependencies:
+
+`pip install -r requirements.txt`
+
+customise `setup*Exe.py` file if needed and run:
+
+`python setupGuiExe.py build` (only Gui)
+or 
+`python setupCoreExe.py build` (only CLI)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
