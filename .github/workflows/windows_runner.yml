@@ -33,7 +33,7 @@ jobs:
     - name: Show result
       run: |
         dir
-        type D:\a\LicensePlateRec\LicensePlateRec\core\tests\test_log.log
+        type D:\a\LicensePlateRec\LicensePlateRec\core\tests\grupaA1_log.log
 
     - name: Test windows mock with Python
       run: |

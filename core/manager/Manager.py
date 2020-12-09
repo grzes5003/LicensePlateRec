@@ -211,7 +211,7 @@ class Manager:
         """
         if self._are_all_processed:
             if self._file_generation_status:
-                return 0.7
+                return 0.6
             return 0.3
         return 0.1
 

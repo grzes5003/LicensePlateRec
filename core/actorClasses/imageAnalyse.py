@@ -2,6 +2,7 @@ import logging
 import os
 import random
 import sys
+import threading
 import time
 from abc import abstractmethod, ABC
 from pathlib import Path
@@ -23,16 +24,19 @@ COUNTRY = "eu"
 REGION = "pl"
 
 
-class Singleton(type):
+class SingletonThread(type):
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+        _id = threading.get_ident()
+        if _id not in cls._instances:
+            cls._instances[_id] = {}
+        if cls not in cls._instances[_id]:
+            cls._instances[_id][cls] = super(SingletonThread, cls).__call__(*args, **kwargs)
+        return cls._instances[_id][cls]
 
 
-class MLInstance(metaclass=Singleton):
+class MLInstance(metaclass=SingletonThread):
     """
     In order to operate only on one ML instance, thus saving memory in
     multi-threading implementation, singleton class is provided. This way

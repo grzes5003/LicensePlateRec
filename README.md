@@ -114,9 +114,9 @@ or
 
 
 ## Known Issues
-* Only one file can be analysed in one session
-* If more than one process is used, program crashes
-* Video file preview sometimes is taken from different file
+* <s>Only one file can be analysed in one GUI session</s>
+* <s>If more than one process is used, program crashes/unexpected behavior occurs</s> 
+* Video file preview is sometimes taken from a different file
 
 
 

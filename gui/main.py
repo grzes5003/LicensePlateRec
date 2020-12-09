@@ -100,7 +100,7 @@ class MainWindow(QObject):
     @Slot()
     def openLog(self):
         self.log.info(self._log_file_dest)
-        os.startfile(self._log_file_dest)
+        os.startfile(self._log_file_dest + '.log')
 
     @Slot()
     def startAnalyze(self):
