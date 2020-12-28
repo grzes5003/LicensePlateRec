@@ -30,7 +30,7 @@ class Alpr():
         elif platform.system().lower().find("darwin") != -1:
             self._openalprpy_lib = ctypes.cdll.LoadLibrary(str(Path.joinpath(OPENALPR_PATH, "libopenalprpy.dylib")))
         else:
-            self._openalprpy_lib = ctypes.cdll.LoadLibrary("libopenalprpy.so")
+            self._openalprpy_lib = ctypes.cdll.LoadLibrary(str(Path.joinpath(OPENALPR_PATH, "libopenalprpy.so")))
 
         # print("1::::::")
         self._initialize_func = self._openalprpy_lib.initialize
