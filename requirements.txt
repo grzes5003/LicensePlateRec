@@ -4,3 +4,4 @@ opencv-python
 PySide2
 click
 numpy
+numpy

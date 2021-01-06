@@ -79,6 +79,10 @@ requires modification of source code.
 
 ###  Windows
 #### Python 
+
+> #### Note
+> tested on python 3.8.x
+
 1) Install basic dependencies
 
 `pip install -r requirements.txt`

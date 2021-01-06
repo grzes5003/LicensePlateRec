@@ -32,6 +32,9 @@ class MainWindow(QObject):
         self._log_file_dest = ''
         self._manager = manager
 
+        self.analyse_btn = self._root.findChild(QObject, "btn_analyze")
+        # self.analyse_btn.setEnabled(False)
+
     @Slot(str, result=str)
     def getSourceVid(self, file_path):
         self.counter += 1

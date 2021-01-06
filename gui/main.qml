@@ -224,10 +224,13 @@ Window {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        checkable: false
         anchors.leftMargin: 10
         anchors.bottomMargin: 10
         anchors.rightMargin: 10
+        objectName: "btn_analyze"
+
+        enabled: true
+
         onClicked: {
             con.startAnalyze()
         }
