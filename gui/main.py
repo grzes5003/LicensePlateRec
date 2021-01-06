@@ -3,10 +3,13 @@ import logging
 import os
 import sys
 import threading
+import traceback
 from pathlib import Path
+from urllib.parse import urlparse
 
 import cv2
 from PySide2.QtCore import QObject, Slot, QUrl
+from PySide2.QtWidgets import QMessageBox, QWidget
 
 from core.manager.Manager import Manager
 
@@ -28,12 +31,17 @@ class MainWindow(QObject):
         self._root = root
         self.counter = 0
         self.video_path = ''
-        self.dest_path = ''
+        self.dest_path = os.path.join(os.path.dirname(__file__))
         self._log_file_dest = ''
         self._manager = manager
 
+        self.is_analysed = False
+        self.is_locked = False
+
         self.analyse_btn = self._root.findChild(QObject, "btn_analyze")
         # self.analyse_btn.setEnabled(False)
+
+        sys.excepthook = MainWindow.excepthook
 
     @Slot(str, result=str)
     def getSourceVid(self, file_path):
@@ -51,16 +59,15 @@ class MainWindow(QObject):
             image = self._root.findChild(QObject, "image")
 
             # A way to force QComponent to reload image, not really elegant but it works
+
+            # works on macos, no idea how behaves on windows :)
             if self.counter % 2:
-                print("pr1")
                 cv2.imwrite('preview1.png', frame)
-                url = QUrl.fromLocalFile(os.path.join(os.path.dirname(__file__), "preview1.png"))
-                image.setProperty("source", url)
+                url = QUrl(os.path.join(os.path.dirname(self.video_path), "preview1.png"))
             else:
-                print("pr2")
                 cv2.imwrite('preview2.png', frame)
-                url = QUrl.fromLocalFile(os.path.join(os.path.dirname(__file__), "preview2.png"))
-                image.setProperty("source", url)
+                url = QUrl(os.path.join(os.path.dirname(self.video_path), "preview2.png"))
+            image.setProperty("source", url)
 
             txt_status = self._root.findChild(QObject, "txt_status")
             txt_status.setProperty("text", "Status: Ready")
@@ -89,7 +96,7 @@ class MainWindow(QObject):
         self.dest_path = folder_path
         self.log.info("destination path: " + folder_path)
 
-        dest = self.dest_path[8:]
+        dest = self.dest_path
         print(dest)
         if len(dest) > 36:
             dest = dest[0:18] + "..." + dest[len(dest) - 18:]
@@ -98,16 +105,32 @@ class MainWindow(QObject):
     @Slot()
     def openVideo(self):
         self.log.info(self.video_path)
+        if not self.dest_path or not self.is_analysed or self.is_locked:
+            popup_not_found = self._root.findChild(QObject, "popup_not_found")
+            popup_not_found.open()
+            return
         os.startfile(self.video_path)
 
     @Slot()
     def openLog(self):
         self.log.info(self._log_file_dest)
+        if not self.dest_path or not self.is_analysed or self.is_locked:
+            popup_not_found = self._root.findChild(QObject, "popup_not_found")
+            popup_not_found.open()
+            return
         os.startfile(self._log_file_dest + '.log')
 
     @Slot()
     def startAnalyze(self):
+        popup_warning = self._root.findChild(QObject, "popup_warning")
         progbar = self._root.findChild(QObject, "progressBar")
+        if not self.dest_path or not self.video_path:
+            popup_warning.open()
+            return
+        if self.is_locked:
+            return
+        self.is_analysed = False
+        self.is_locked = True
         progbar.setProperty("value", 0)
         thr = threading.Thread(target=self.analyze)
         thr.start()
@@ -117,17 +140,12 @@ class MainWindow(QObject):
         self.log.debug(Path(__file__).resolve())
         progbar.setProperty("value", 0.1)
 
-        file_name = ''
-        if '\\' in self.video_path:
-            file_name = self.video_path.split('\\')[-1]
-            file_name = '\\' + str(file_name).split('.')[0] + '_log'
-        else:
-            file_name = self.video_path.split('/')[-1]
-            file_name = '/' + str(file_name).split('.')[0] + '_log'
+        file_name = str(os.path.basename(self.video_path)).split('.')[0] + '_log'
 
-        dest_path = str(self.dest_path[8:])+str(file_name)
+        dest_path = os.path.join(urlparse(self.dest_path).path, file_name)
+        video_path = urlparse(self.video_path).path
         self._log_file_dest = dest_path
-        self._manager.reset_config(video_input_path=self.video_path[8:],
+        self._manager.reset_config(video_input_path=video_path,
                                    log_file_path=dest_path)
         self._manager.run()
 
@@ -135,6 +153,18 @@ class MainWindow(QObject):
             progbar.setProperty("value", self._manager.get_progress())
         progbar.setProperty("value", 1)
         self.log.info("Finished analysing")
+
+        self.is_analysed = True
+        self.is_locked = False
+        popup_success = self._root.findChild(QObject, "popup_success")
+        popup_success.open()
+        progbar.setProperty("value", 0)
+
+    @staticmethod
+    def excepthook(exc_type, exc_value, exc_tb):
+        tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+        print("error catched!:")
+        print("error message:\n", tb)
 
 # def run():
 #     app = QGuiApplication(sys.argv)

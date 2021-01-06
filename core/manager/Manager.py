@@ -58,8 +58,6 @@ class Manager:
         # end of logger declaration
 
         self._max_workers = _config['manager']['max_workers']
-        # TODO fix bug; return to ProcessPoolExecutor(max_workers=self._max_workers) version
-        # self._executor = ProcessPoolExecutor(max_workers=self._max_workers)
         self._executor = ThreadPoolExecutor(max_workers=self._max_workers)
         self._futures = []
 
@@ -214,6 +212,9 @@ class Manager:
                 return 0.6
             return 0.3
         return 0.1
+
+    def _raise_exception(self, e: Exception):
+        raise e
 
     def reset_config(self, video_input_path=None, log_file_path=None):
 

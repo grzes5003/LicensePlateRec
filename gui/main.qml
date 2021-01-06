@@ -265,11 +265,100 @@ Window {
         }
     }
 
+    Popup {
+        id: popup_warning
+        anchors.centerIn: parent
+        modal: true
+        focus: true
+        padding: 10
+        background: Rectangle {
+            color: "#1c1d20"
+        }
 
+        contentItem: Text {
+            color: "#ffffff"
+            text: "You must select source file and destination path first"
+        }
 
+        objectName: "popup_warning"
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    }
 
+    Popup {
+        id: popup_not_found
+        anchors.centerIn: parent
+        modal: true
+        focus: true
+        padding: 10
+        background: Rectangle {
+            color: "#1c1d20"
+        }
 
+        contentItem: Text {
+            color: "#ffffff"
+            text: "No output video/log file found. You must analyse something first"
+        }
 
+        objectName: "popup_not_found"
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    }
+
+    Popup {
+        id: popup_success
+        anchors.centerIn: parent
+        modal: true
+        focus: true
+        padding: 10
+        background: Rectangle {
+            color: "#1c1d20"
+        }
+
+        contentItem: Text {
+            color: "#ffffff"
+            text: "Video analysed successfully"
+        }
+
+        objectName: "popup_success"
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    }
+
+    Popup {
+        id: popup_error
+        anchors.centerIn: parent
+        modal: true
+        focus: true
+        padding: 10
+        background: Rectangle {
+            color: "#1c1d20"
+        }
+
+        contentItem: Text {
+            color: "#ffffff"
+            text: "Error occurred! Please restart program"
+        }
+
+        objectName: "popup_error"
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    }
+
+    Popup {
+        id: popup_wait
+        anchors.centerIn: parent
+        modal: true
+        focus: true
+        padding: 10
+        background: Rectangle {
+            color: "#1c1d20"
+        }
+
+        contentItem: Text {
+            color: "#ffffff"
+            text: "You must wait"
+        }
+
+        objectName: "popup_wait"
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    }
 }
 
 /*##^##
