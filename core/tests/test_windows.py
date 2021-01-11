@@ -19,5 +19,5 @@ def test_windows():
 
     time.sleep(5)
 
-    assert os.path.isfile('core/tests/test_log.log') is True
+    assert os.path.isfile('core/tests/grupaA1_log.log') is True
 

@@ -6,6 +6,7 @@ import threading
 import traceback
 from pathlib import Path
 from urllib.parse import urlparse
+from urllib.request import url2pathname, urljoin
 
 import cv2
 from PySide2.QtCore import QObject, Slot, QUrl
@@ -62,11 +63,12 @@ class MainWindow(QObject):
 
             # works on macos, no idea how behaves on windows :)
             if self.counter % 2:
-                cv2.imwrite('preview1.png', frame)
-                url = QUrl(os.path.join(os.path.dirname(self.video_path), "preview1.png"))
+                cv2.imwrite(url2pathname(urlparse(urljoin(os.path.dirname(self.video_path), "preview1.png")).path), frame)
+                # url2pathname(urlparse(os.path.join(os.path.dirname(self.video_path), "preview1.png")).path)
+                url = QUrl(urljoin(os.path.dirname(self.video_path), "preview1.png"))
             else:
-                cv2.imwrite('preview2.png', frame)
-                url = QUrl(os.path.join(os.path.dirname(self.video_path), "preview2.png"))
+                cv2.imwrite(url2pathname(urlparse(urljoin(os.path.dirname(self.video_path), "preview2.png")).path), frame)
+                url = QUrl(urljoin(os.path.dirname(self.video_path), "preview2.png"))
             image.setProperty("source", url)
 
             txt_status = self._root.findChild(QObject, "txt_status")
@@ -109,7 +111,7 @@ class MainWindow(QObject):
             popup_not_found = self._root.findChild(QObject, "popup_not_found")
             popup_not_found.open()
             return
-        os.startfile(self.video_path)
+        os.startfile(url2pathname(urlparse(self.video_path).path))
 
     @Slot()
     def openLog(self):
@@ -144,9 +146,9 @@ class MainWindow(QObject):
 
         dest_path = os.path.join(urlparse(self.dest_path).path, file_name)
         video_path = urlparse(self.video_path).path
-        self._log_file_dest = dest_path
-        self._manager.reset_config(video_input_path=video_path,
-                                   log_file_path=dest_path)
+        self._log_file_dest = url2pathname(dest_path)
+        self._manager.reset_config(video_input_path=url2pathname(video_path),
+                                   log_file_path=url2pathname(dest_path))
         self._manager.run()
 
         while self._manager.get_status():
